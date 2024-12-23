@@ -150,7 +150,8 @@ export class CouncilPlugin implements Plugin {
             };
           } else {
             return {
-              text: "No active councils to confirm. Try starting a new one!"
+              text: "No active councils to confirm. Try starting a new one!",
+              type: "text"
             };
           }
         }
@@ -175,7 +176,7 @@ export class CouncilPlugin implements Plugin {
               if (council) {
                 const memberList = council.members.map(m => m.name).join(", @");
                 return {
-                  text: `1/1 Yo fam! Assembling council #${council.id} to rate $${crypto}! Got @${memberList} on deck! Reply 'confirm' to get their takes! 🚀`,
+                  text: `Yo fam! Assembling council #${council.id} to rate $${crypto}! Got @${memberList} on deck! Reply 'confirm' to get their takes! 🚀`,
                   type: "text"
                 };
               } else {
