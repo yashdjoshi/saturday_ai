@@ -1,4 +1,4 @@
-import { IAgentRuntime, IPlugin } from "@ai16z/eliza";
+import { IAgentRuntime, Plugin } from "@ai16z/eliza";
 
 interface Council {
   id: string;
@@ -9,7 +9,9 @@ interface Council {
   analysis: string;
 }
 
-export class CouncilManager implements IPlugin {
+export class CouncilManager implements Plugin {
+  name = "council";
+  description = "Manages crypto rating councils";
   private councils: Map<string, Council> = new Map();
   private readonly councilMembers = [
     'CryptoSage',
