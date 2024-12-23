@@ -52,6 +52,11 @@ export class CouncilManager implements Plugin {
   ];
 
   async initialize(runtime: IAgentRuntime): Promise<void> {
+    runtime.messageManager.registerHandler('beforeMessage', async (message) => {
+      // Handle incoming messages
+      console.log('Council received message:', message);
+    });
+
     runtime.registerAction({
       name: "handleCryptoMessages",
       similes: ["crypto rating", "rate crypto", "crypto council"], // Alternative triggers
