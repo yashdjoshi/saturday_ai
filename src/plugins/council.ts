@@ -121,21 +121,28 @@ export class CouncilPlugin implements Plugin {
       ],
       validate: async (runtime: IAgentRuntime, message: { content: { text: string } }) => {
         // Validation logic to determine if the action should run
+        console.log("Validating message:", message.content.text);
         const text = message.content.text.toLowerCase();
-        return text.includes("rate") || text.includes("what do you think about") || text.includes("confirm");
+        const isValid = text.includes("rate") || text.includes("what do you think about") || text.includes("confirm");
+        console.log("Is valid:", isValid);
+        return isValid;
       },
       handler: async (runtime: IAgentRuntime, message: Memory, state: State, options: any, callback: any) => {
+        console.log("Handler called with message:", message.content.text);
         const text = message.content.text.toLowerCase();
 
         // Check if message is about rating a crypto
         if (text.includes("rate") || text.includes("what do you think about")) {
+          console.log("Detected rate request");
           const supportedCryptos = ["btc", "eth", "sol", "doge", "shib"];
           const cryptoRegex = new RegExp(`\\b(${supportedCryptos.join("|")}|[a-z]{3,})\\b`, "i");
           const cryptoMatch = text.match(cryptoRegex);
 
           if (cryptoMatch) {
+            console.log("Matched crypto:", cryptoMatch[0]);
             const crypto = cryptoMatch[0].toUpperCase();
             const council = this.suggestCouncil(crypto);
+            console.log("Created council:", council);
 
             if (council) {
               const memberList = council.members.map(m => m.name).join(", @");
