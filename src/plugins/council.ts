@@ -145,22 +145,21 @@ export class CouncilPlugin implements Plugin {
             if (supportedCryptos.includes(matchedCrypto)) {
               console.log("Matched crypto:", matchedCrypto);
               const crypto = matchedCrypto.toUpperCase();
-            const council = this.suggestCouncil(crypto);
-            console.log("Created council:", council);
+              const council = this.suggestCouncil(crypto);
+              console.log("Created council:", council);
 
-            if (council) {
-              const memberList = council.members.map(m => m.name).join(", @");
-              return {
-                text: `Yo fam! Assembling council #${council.id} to rate $${crypto}! Got @${memberList} on deck! Reply 'confirm' to get their takes! 🚀`
-              };
-            } else {
-              return {
-                text: `Sorry, couldn't assemble a council for $${crypto}. Try again later!`
-              };
+              if (council) {
+                const memberList = council.members.map(m => m.name).join(", @");
+                return {
+                  text: `Yo fam! Assembling council #${council.id} to rate $${crypto}! Got @${memberList} on deck! Reply 'confirm' to get their takes! 🚀`
+                };
+              } else {
+                return {
+                  text: `Sorry, couldn't assemble a council for $${crypto}. Try again later!`
+                };
+              }
             }
-            return;
           }
-        }
 
         // Check for council confirmation
         if (text.includes("confirm")) {
