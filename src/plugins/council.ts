@@ -161,28 +161,29 @@ export class CouncilPlugin implements Plugin {
             }
           }
 
-        // Check for council confirmation
-        if (text.includes("confirm")) {
-          const activeCouncils = Array.from(this.councils.values()).filter((c: Council) => c.status === "pending");
+          // Check for council confirmation
+          if (text.includes("confirm")) {
+            const activeCouncils = Array.from(this.councils.values()).filter((c: Council) => c.status === "pending");
 
-          if (activeCouncils.length > 0) {
-            const council = activeCouncils[0] as Council;
-            this.confirmCouncil(council.id);
+            if (activeCouncils.length > 0) {
+              const council = activeCouncils[0] as Council;
+              this.confirmCouncil(council.id);
 
-            const rating = await this.collectRatings(council.id);
-            return { text: rating };
-          } else {
-            return {
-              text: "No active councils to confirm. Try starting a new one!"
-            };
+              const rating = await this.collectRatings(council.id);
+              return {text: rating};
+            } else {
+              return {
+                text: "No active councils to confirm. Try starting a new one!"
+              };
+            }
+            return;
           }
-          return;
-        }
 
-        // Default response if no conditions are met
-        return {
-          text: "I'm not sure what you're asking. Try 'rate BTC' or 'confirm'."
-        };
+          // Default response if no conditions are met
+          return {
+            text: "I'm not sure what you're asking. Try 'rate BTC' or 'confirm'."
+          };
+        }
       },
     });
   }
