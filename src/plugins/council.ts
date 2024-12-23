@@ -120,16 +120,30 @@ export class CouncilManager implements Plugin {
     council.analysis = analyses[sentiment];
     council.status = 'complete';
 
-    return `🎯 Council Rating for ${council.crypto}: ${avgRating.toFixed(1)}/10\n\n` +
-           `📊 Technical Score: ${council.technicalScore}/100\n` +
-           `💎 Fundamental Score: ${council.fundamentalScore}/100\n` +
-           `🐸 Meme Potential: ${council.memePotential}/100\n` +
-           `⚠️ Risk Level: ${council.riskLevel.toUpperCase()}\n\n` +
-           `Analysis:\n${council.analysis}\n\n` +
-           `Individual Ratings:\n` +
-           council.members
-             .map(member => `${member.name} (${member.expertise}): ${council.ratings[member.name]}/10\n"${member.catchphrase}"`)
-             .join('\n\n');
+    // Format the response as a series of tweet-sized chunks
+    const tweets = [];
+    
+    // Tweet 1: Overall rating and risk
+    tweets.push(
+      `${council.crypto} Council Rating 🎯\n` +
+      `Overall: ${avgRating.toFixed(1)}/10\n` +
+      `Risk: ${council.riskLevel.toUpperCase()}\n` +
+      `Tech: ${council.technicalScore}/100 | Fund: ${council.fundamentalScore}/100 | Meme: ${council.memePotential}/100`
+    );
+
+    // Tweet 2: Analysis
+    tweets.push(council.analysis);
+
+    // Tweet 3: Individual ratings (compressed format)
+    const ratings = council.members
+      .map(m => `${m.name}: ${council.ratings[m.name]}/10`)
+      .join(' | ');
+    tweets.push(`Council Votes:\n${ratings}`);
+
+    // Add tweet numbering
+    return tweets
+      .map((tweet, i) => `${i + 1}/${tweets.length} ${tweet}`)
+      .join('\n\n---\n\n');
   }
 
   getCouncil(id: string): Council | undefined {
