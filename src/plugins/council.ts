@@ -32,6 +32,29 @@ interface AnalysisStage {
   completed: boolean;
   score: number;
   analysis: string;
+  details: {
+    onChain?: {
+      github?: string;
+      transactions?: string;
+    };
+    social?: {
+      twitter?: string;
+      telegram?: string;
+    };
+    market?: {
+      firstMover: boolean;
+      competitors: string[];
+      team?: string;
+    };
+    design?: {
+      website?: string;
+      artStyle?: string;
+    };
+    value?: {
+      innovation?: string;
+      useCase?: string;
+    };
+  };
 }
 
 interface Council {
@@ -220,10 +243,47 @@ export class CouncilPlugin implements Plugin {
 
   suggestCouncil(crypto: string, tokenData: TokenData): Council {
     const id = Math.random().toString(36).substring(7);
-    // Select 3 random members with their full profiles
     const members = [...this.councilMembers]
       .sort(() => 0.5 - Math.random())
       .slice(0, 3);
+
+    const stages = [
+      {
+        name: "On-chain Analysis",
+        completed: false,
+        score: 0,
+        analysis: "",
+        details: {}
+      },
+      {
+        name: "Social Sentiment",
+        completed: false,
+        score: 0,
+        analysis: "",
+        details: {}
+      },
+      {
+        name: "Market Insights",
+        completed: false,
+        score: 0,
+        analysis: "",
+        details: {}
+      },
+      {
+        name: "Design and Art",
+        completed: false,
+        score: 0,
+        analysis: "",
+        details: {}
+      },
+      {
+        name: "Value Proposition",
+        completed: false,
+        score: 0,
+        analysis: "",
+        details: {}
+      }
+    ];
 
     const council: Council = {
       id,
@@ -232,9 +292,8 @@ export class CouncilPlugin implements Plugin {
       ratings: {},
       crypto,
       analysis: '',
-      technicalScore: 0,
-      fundamentalScore: 0,
-      memePotential: 0,
+      currentStage: 0,
+      stages,
       riskLevel: 'medium',
       tokenData
     };
