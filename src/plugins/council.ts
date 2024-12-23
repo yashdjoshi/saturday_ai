@@ -552,10 +552,12 @@ export class CouncilPlugin implements Plugin {
       for (const member of council.members) {
         const analysis = await this.generateMemberAnalysis(member, council);
         analyses[member.name] = analysis;
-        council.ratings[member.name] = {
+        const rating: CouncilRating = {
+          memberName: member.name,
           score: Math.floor(Math.random() * 40) + 60, // 60-100 range
           comment: this.generateMemberComment(member)
         };
+        council.ratings[member.name] = rating;
       }
 
       return analyses;
