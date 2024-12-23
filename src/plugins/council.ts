@@ -52,33 +52,62 @@ export class CouncilManager implements Plugin {
   ];
 
   async initialize(runtime: IAgentRuntime): Promise<void> {
-    runtime.on('beforeMessage', async (message) => {
-      const text = message.content.text.toLowerCase();
-      
-      // Check if message is about rating a crypto
-      if (text.includes('rate') || text.includes('what do you think about')) {
-        const cryptoMatch = text.match(/\b(btc|eth|sol|doge|shib|[a-z]{3,})\b/i);
-        if (cryptoMatch) {
-          const crypto = cryptoMatch[0].toUpperCase();
-          const council = this.suggestCouncil(crypto);
-          message.content.text = `Yo fam! Assembling council #${council.id} to rate $${crypto}! Got @${council.members.map(m => m.name).join(' @')} on deck! Reply 'confirm' to get their takes! 🚀`;
+    runtime.registerAction({
+      name: "handleCryptoMessages",
+      similes: ["crypto rating", "rate crypto", "crypto council"], // Alternative triggers
+      description: "Handles messages related to crypto ratings and council confirmations.",
+      examples: [
+        [
+          { input: "Rate BTC", output: "Yo fam! Assembling council #1 to rate $BTC!" },
+          { input: "What do you think about ETH?", output: "Yo fam! Assembling council #2 to rate $ETH!" },
+        ],
+        [
+          { input: "Confirm", output: "Council confirmed! Here's the rating: ..." },
+        ],
+      ],
+      validate: async (runtime, message) => {
+        // Validation logic to determine if the action should run
+        const text = message.content.text.toLowerCase();
+        return text.includes("rate") || text.includes("what do you think about") || text.includes("confirm");
+      },
+      async handler(context) {
+        const text = context.input.text.toLowerCase();
+
+        // Check if message is about rating a crypto
+        if (text.includes("rate") || text.includes("what do you think about")) {
+          const supportedCryptos = ["btc", "eth", "sol", "doge", "shib"];
+          const cryptoRegex = new RegExp(`\\b(${supportedCryptos.join("|")}|[a-z]{3,})\\b`, "i");
+          const cryptoMatch = text.match(cryptoRegex);
+
+          if (cryptoMatch) {
+            const crypto = cryptoMatch[0].toUpperCase();
+            const council = this.suggestCouncil(crypto);
+
+            if (council) {
+              context.output.text = `Yo fam! Assembling council #${council.id} to rate $${crypto}! Got @${council.members.map(m => m.name).join(" @")} on deck! Reply 'confirm' to get their takes! 🚀`;
+            } else {
+              context.output.text = `Sorry, couldn't assemble a council for $${crypto}. Try again later!`;
+            }
+            return;
+          }
+        }
+
+        // Check for council confirmation
+        if (text.includes("confirm")) {
+          const activeCouncils = Array.from(this.councils.values()).filter((c) => c.status === "pending");
+
+          if (activeCouncils.length > 0) {
+            const council = activeCouncils[0];
+            this.confirmCouncil(council.id);
+
+            const rating = await this.collectRatings(council.id);
+            context.output.text = rating;
+          } else {
+            context.output.text = "No active councils to confirm. Try starting a new one!";
+          }
           return;
         }
-      }
-      
-      // Check for council confirmation
-      if (text.includes('confirm')) {
-        const activeCouncils = Array.from(this.councils.values())
-          .filter(c => c.status === 'pending');
-        
-        if (activeCouncils.length > 0) {
-          const council = activeCouncils[0];
-          this.confirmCouncil(council.id);
-          const rating = this.collectRatings(council.id);
-          message.content.text = rating;
-          return;
-        }
-      }
+      },
     });
   }
 
