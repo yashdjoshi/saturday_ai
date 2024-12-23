@@ -1,24 +1,54 @@
 import { IAgentRuntime, Plugin } from "@ai16z/eliza";
 
+interface CouncilMember {
+  name: string;
+  expertise: string;
+  catchphrase: string;
+}
+
 interface Council {
   id: string;
-  members: string[];
+  members: CouncilMember[];
   status: 'pending' | 'active' | 'complete';
   ratings: { [member: string]: number };
   crypto: string;
   analysis: string;
+  technicalScore: number;
+  fundamentalScore: number;
+  memePotential: number;
+  riskLevel: 'low' | 'medium' | 'high';
 }
 
 export class CouncilManager implements Plugin {
   name = "council";
   description = "Manages crypto rating councils";
   private councils: Map<string, Council> = new Map();
-  private readonly councilMembers = [
-    'CryptoSage',
-    'TokenWhisperer', 
-    'BlockchainOracle',
-    'DeFiGuru',
-    'ChartMaster'
+  private readonly councilMembers: CouncilMember[] = [
+    {
+      name: 'CryptoSage',
+      expertise: 'Technical Analysis',
+      catchphrase: 'The charts never lie, but sometimes they do a little trolling'
+    },
+    {
+      name: 'TokenWhisperer',
+      expertise: 'Tokenomics',
+      catchphrase: 'If the tokenomics are mid, you gonna stay poor kid'
+    },
+    {
+      name: 'BlockchainOracle',
+      expertise: 'On-Chain Analysis',
+      catchphrase: 'The blockchain sees all, especially your poor life choices'
+    },
+    {
+      name: 'DeFiGuru',
+      expertise: 'DeFi Mechanics',
+      catchphrase: 'Touch grass? I only touch smart contracts'
+    },
+    {
+      name: 'ChartMaster',
+      expertise: 'Market Psychology',
+      catchphrase: 'When there\'s blood in the streets... buy more crypto'
+    }
   ];
 
   async initialize(runtime: IAgentRuntime): Promise<void> {
@@ -27,7 +57,7 @@ export class CouncilManager implements Plugin {
 
   suggestCouncil(crypto: string): Council {
     const id = Math.random().toString(36).substring(7);
-    // Randomly select 3 members for each council
+    // Select 3 random members with their full profiles
     const members = [...this.councilMembers]
       .sort(() => 0.5 - Math.random())
       .slice(0, 3);
@@ -38,7 +68,11 @@ export class CouncilManager implements Plugin {
       status: 'pending',
       ratings: {},
       crypto,
-      analysis: ''
+      analysis: '',
+      technicalScore: 0,
+      fundamentalScore: 0,
+      memePotential: 0,
+      riskLevel: 'medium'
     };
     
     this.councils.set(id, council);
@@ -60,30 +94,42 @@ export class CouncilManager implements Plugin {
       return 'Council not found or not active';
     }
 
-    // Generate ratings and analysis for each member
+    // Generate detailed ratings
     council.members.forEach(member => {
-      council.ratings[member] = Math.floor(Math.random() * 10) + 1;
+      council.ratings[member.name] = Math.floor(Math.random() * 10) + 1;
     });
 
+    // Calculate scores
+    council.technicalScore = Math.floor(Math.random() * 100);
+    council.fundamentalScore = Math.floor(Math.random() * 100);
+    council.memePotential = Math.floor(Math.random() * 100);
+    
     const avgRating = Object.values(council.ratings).reduce((a, b) => a + b, 0) / council.members.length;
+    
+    // Determine risk level
+    council.riskLevel = avgRating > 7 ? 'low' : avgRating > 4 ? 'medium' : 'high';
 
-    // Generate analysis based on the rating
+    // Generate detailed analysis
     const sentiment = avgRating >= 7 ? 'bullish' : avgRating >= 4 ? 'neutral' : 'bearish';
     const analyses = {
-      bullish: `${council.crypto} looking absolutely based rn fam! The fundamentals are strong af and the charts are screaming moon mission! 🚀`,
-      neutral: `${council.crypto} giving mixed signals bro. Might need to zoom out and DYOR. NFA but watch this one closely.`,
-      bearish: `${council.crypto} looking kinda sus ngl. Charts giving bearish vibes, might want to touch grass before aping in.`
+      bullish: `${council.crypto} is looking absolutely based! Technical analysis is screaming moon mission, fundamentals are thicc, and the meme potential is off the charts! NFA but your grandkids will thank you for this one fam! 🚀`,
+      neutral: `${council.crypto} giving mixed signals rn. The charts are crabbing harder than your ex's attitude. Might need to zoom out and DYOR. Keep some dry powder ready anon.`,
+      bearish: `${council.crypto} looking more sus than a 4am discord pump. Charts giving major bearish vibes, tokenomics looking shakier than a paper-handed trader. Might want to touch grass before aping in.`
     };
 
     council.analysis = analyses[sentiment];
     council.status = 'complete';
 
-    return `Council Rating for ${council.crypto}: ${avgRating.toFixed(1)}/10 🎯\n\n` +
-           `${council.analysis}\n\n` +
-           `Individual ratings:\n` +
-           Object.entries(council.ratings)
-             .map(([member, rating]) => `${member}: ${rating}/10`)
-             .join('\n');
+    return `🎯 Council Rating for ${council.crypto}: ${avgRating.toFixed(1)}/10\n\n` +
+           `📊 Technical Score: ${council.technicalScore}/100\n` +
+           `💎 Fundamental Score: ${council.fundamentalScore}/100\n` +
+           `🐸 Meme Potential: ${council.memePotential}/100\n` +
+           `⚠️ Risk Level: ${council.riskLevel.toUpperCase()}\n\n` +
+           `Analysis:\n${council.analysis}\n\n` +
+           `Individual Ratings:\n` +
+           council.members
+             .map(member => `${member.name} (${member.expertise}): ${council.ratings[member.name]}/10\n"${member.catchphrase}"`)
+             .join('\n\n');
   }
 
   getCouncil(id: string): Council | undefined {
