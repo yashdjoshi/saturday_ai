@@ -8,7 +8,7 @@
       "config": {}
     }
   ],
-  "clients": ["twitter"],
+  "clients": [],
   "modelProvider": "anthropic",
   "settings": {
     "secrets": {},
