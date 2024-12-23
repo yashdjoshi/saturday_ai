@@ -171,34 +171,28 @@ export class CouncilPlugin implements Plugin {
               console.log("Matched crypto:", matchedCrypto);
               const crypto = matchedCrypto.toUpperCase();
               
-              // Get token trade data first
+              // Get token trade data and show it immediately
               const tokenData = await this.getTokenTradeData(crypto);
               callback({
-                text: `📊 Token Stats for $${crypto}:\n${tokenData}\n\nShould I proceed with council formation? (Reply 'yes' or suggest different members)`,
+                text: `📊 Token Stats for $${crypto}:\n${tokenData}`,
                 type: "text"
               });
 
-              // Store pending council but don't activate yet
+              // Create and store council immediately
               const council = this.suggestCouncil(crypto);
-              console.log("Created pending council:", council);
+              console.log("Created council:", council);
+              
+              // Show council members right after stats
+              const memberList = council.members.map(m => 
+                `@${m.name} (${m.expertise})\n"${m.catchphrase}"`
+              ).join("\n");
+              
+              callback({
+                text: `🎯 Proposed Council #${council.id} for $${crypto}:\n\n${memberList}\n\nReply 'confirm' to get their rating or suggest different members!`,
+                type: "text"
+              });
               return;
             }
-          }
-        }
-
-        // Check for council confirmation
-        if (text.includes("yes")) {
-          const pendingCouncils = Array.from(this.councils.values())
-            .filter(c => c.status === "pending");
-          
-          if (pendingCouncils.length > 0) {
-            const council = pendingCouncils[0];
-            const memberList = council.members.map(m => m.name).join(", @");
-            callback({
-              text: `Yo fam! Council #${council.id} for $${council.crypto} is ready! Got @${memberList} on deck! Reply 'confirm' to get their takes! 🚀`,
-              type: "text"
-            });
-            return;
           }
         }
 
@@ -277,12 +271,12 @@ export class CouncilPlugin implements Plugin {
     council.analysis = analyses[sentiment];
     council.status = 'complete';
 
-    // Format a single concise response with ratings
+    // Format a detailed response with individual ratings and analysis
     const ratings = council.members
-      .map(m => `${m.name}: ${council.ratings[m.name]}/10`)
-      .join(' | ');
+      .map(m => `@${m.name} (${m.expertise}): ${council.ratings[m.name]}/10`)
+      .join('\n');
 
-    return `${council.crypto} Council Rating 🎯\nOverall: ${avgRating.toFixed(1)}/10\n\nVotes:\n${ratings}`;
+    return `🎯 ${council.crypto} Council Rating:\n\nOverall Score: ${avgRating.toFixed(1)}/10\n\nIndividual Ratings:\n${ratings}\n\n📊 Analysis:\nTechnical Score: ${council.technicalScore}/100\nFundamental Score: ${council.fundamentalScore}/100\nMeme Potential: ${council.memePotential}/100\nRisk Level: ${council.riskLevel.toUpperCase()}\n\n💭 Summary:\n${council.analysis}`;
   }
 
   getCouncil(id: string): Council | undefined {
