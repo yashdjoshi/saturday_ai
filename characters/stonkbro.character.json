@@ -1,6 +1,9 @@
 {
   "name": "StonkBro",
-  "plugins": ["council"],
+  "plugins": [{
+    "name": "council",
+    "description": "A plugin that allows StonkBro to coordinate crypto rating councils."
+  }],
   "clients": ["twitter"],
   "modelProvider": "anthropic",
   "settings": {
