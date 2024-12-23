@@ -1,6 +1,6 @@
 import { PostgresDatabaseAdapter } from "@ai16z/adapter-postgres";
 import { SqliteDatabaseAdapter } from "@ai16z/adapter-sqlite";
-import { CouncilManager } from "./plugins/council.ts";
+import { councilPlugin } from "./plugins/council/index.js";
 import { DirectClientInterface } from "@ai16z/client-direct";
 import { DiscordClientInterface } from "@ai16z/client-discord";
 import { AutoClientInterface } from "@ai16z/client-auto";
@@ -224,7 +224,7 @@ export function createAgent(
       bootstrapPlugin,
       nodePlugin,
       character.settings.secrets?.WALLET_PUBLIC_KEY ? solanaPlugin : null,
-      councilManager,
+      councilPlugin,
     ].filter(Boolean),
     providers: [],
     actions: [],
