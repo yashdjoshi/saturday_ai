@@ -144,7 +144,10 @@ export class CouncilPlugin implements Plugin {
 
             const rating = this.collectRatings(council.id);
             console.log("Generated rating:", rating);
-            return {text: rating};
+            return {
+              text: rating,
+              type: "text"
+            };
           } else {
             return {
               text: "No active councils to confirm. Try starting a new one!"
@@ -172,11 +175,13 @@ export class CouncilPlugin implements Plugin {
               if (council) {
                 const memberList = council.members.map(m => m.name).join(", @");
                 return {
-                  text: `1/1 Yo fam! Assembling council #${council.id} to rate $${crypto}! Got @${memberList} on deck! Reply 'confirm' to get their takes! 🚀`
+                  text: `1/1 Yo fam! Assembling council #${council.id} to rate $${crypto}! Got @${memberList} on deck! Reply 'confirm' to get their takes! 🚀`,
+                  type: "text"
                 };
               } else {
                 return {
-                  text: `Sorry, couldn't assemble a council for $${crypto}. Try again later!`
+                  text: `Sorry, couldn't assemble a council for $${crypto}. Try again later!`,
+                  type: "text"
                 };
               }
             }
@@ -185,7 +190,8 @@ export class CouncilPlugin implements Plugin {
 
         // Default response if no conditions are met
         return {
-          text: "I'm not sure what you're asking. Try 'rate BTC' or 'confirm'."
+          text: "I'm not sure what you're asking. Try 'rate BTC' or 'confirm'.",
+          type: "text"
         };
       },
     });
