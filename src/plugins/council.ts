@@ -1,5 +1,14 @@
 import { IAgentRuntime, Plugin } from "@ai16z/eliza";
 
+interface ActionContext {
+  message: {
+    content: {
+      text: string;
+    };
+  };
+  response: string;
+}
+
 interface CouncilMember {
   name: string;
   expertise: string;
@@ -81,14 +90,7 @@ export class CouncilManager implements Plugin {
       description: string;
       examples: Array<Array<{ text: string; response: string }>>;
       validate: (runtime: IAgentRuntime, message: { content: { text: string } }) => Promise<boolean>;
-      handler: (context: { 
-        message: { 
-          content: { 
-            text: string 
-          } 
-        },
-        response: string
-      }) => Promise<void>;
+      handler: (context: ActionContext) => Promise<void>;
     }) => void;
   }): Promise<void> {
     runtime.registerAction({
@@ -109,7 +111,7 @@ export class CouncilManager implements Plugin {
         const text = message.content.text.toLowerCase();
         return text.includes("rate") || text.includes("what do you think about") || text.includes("confirm");
       },
-      async handler(context) {
+      async handler(context: ActionContext) {
         const text = context.message.content.text.toLowerCase(); // Corrected to use `context.message.content.text`
 
         // Check if message is about rating a crypto
