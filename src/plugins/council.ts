@@ -82,17 +82,7 @@ export class CouncilManager implements Plugin {
     }
   ];
 
-  async initialize(runtime: IAgentRuntime & {
-    on: (event: string, handler: (message: any) => Promise<void>) => void;
-    registerAction: (action: {
-      name: string;
-      similes: string[];
-      description: string;
-      examples: Array<Array<{ text: string; response: string }>>;
-      validate: (runtime: IAgentRuntime, message: { content: { text: string } }) => Promise<boolean>;
-      handler: (context: ActionContext) => Promise<void>;
-    }) => void;
-  }): Promise<void> {
+  async initialize(runtime: IAgentRuntime): Promise<void> {
     runtime.registerAction({
       name: "handleCryptoMessages",
       similes: ["crypto rating", "rate crypto", "crypto council"], // Alternative triggers
