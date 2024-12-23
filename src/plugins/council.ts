@@ -138,9 +138,13 @@ export class CouncilManager implements Plugin {
             const council = this.suggestCouncil(crypto);
 
             if (council) {
-              context.response = `Yo fam! Assembling council #${council.id} to rate $${crypto}! Got @${council.members.map((m) => m.name).join(" @")} on deck! Reply 'confirm' to get their takes! 🚀`;
+              return {
+                text: `Yo fam! Assembling council #${council.id} to rate $${crypto}! Got @${council.members.map((m) => m.name).join(" @")} on deck! Reply 'confirm' to get their takes! 🚀`
+              };
             } else {
-              context.response = `Sorry, couldn't assemble a council for $${crypto}. Try again later!`;
+              return {
+                text: `Sorry, couldn't assemble a council for $${crypto}. Try again later!`
+              };
             }
             return;
           }
@@ -155,15 +159,19 @@ export class CouncilManager implements Plugin {
             this.confirmCouncil(council.id);
 
             const rating = await this.collectRatings(council.id);
-            context.response = rating;
+            return { text: rating };
           } else {
-            context.response = "No active councils to confirm. Try starting a new one!";
+            return {
+              text: "No active councils to confirm. Try starting a new one!"
+            };
           }
           return;
         }
 
         // Default response if no conditions are met
-        context.response = "I'm not sure what you're asking. Try 'rate BTC' or 'confirm'.";
+        return {
+          text: "I'm not sure what you're asking. Try 'rate BTC' or 'confirm'."
+        };
       },
     });
   }
