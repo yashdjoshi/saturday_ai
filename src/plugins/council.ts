@@ -162,34 +162,43 @@ export class CouncilPlugin implements Plugin {
         if (text.includes("rate") || text.includes("what do you think about")) {
           console.log("Detected rate request");
           const supportedCryptos = ["btc", "eth", "sol", "doge", "shib"];
-          // Extract crypto symbol after "rate" or between "about" and end/punctuation
           const rateRegex = /(?:rate|about)\s+(\w+)(?:[^a-zA-Z]|$)/i;
           const cryptoMatch = text.match(rateRegex);
 
           if (cryptoMatch && cryptoMatch[1]) {
             const matchedCrypto = cryptoMatch[1].toLowerCase();
-            // Verify it's a supported crypto
             if (supportedCryptos.includes(matchedCrypto)) {
               console.log("Matched crypto:", matchedCrypto);
               const crypto = matchedCrypto.toUpperCase();
-              const council = this.suggestCouncil(crypto);
-              console.log("Created council:", council);
+              
+              // Get token trade data first
+              const tokenData = await this.getTokenTradeData(crypto);
+              callback({
+                text: `📊 Token Stats for $${crypto}:\n${tokenData}\n\nShould I proceed with council formation? (Reply 'yes' or suggest different members)`,
+                type: "text"
+              });
 
-              if (council) {
-                const memberList = council.members.map(m => m.name).join(", @");
-                callback({
-                  text: `Yo fam! Assembling council #${council.id} to rate $${crypto}! Got @${memberList} on deck! Reply 'confirm' to get their takes! 🚀`,
-                  type: "text"
-                });
-                return;
-              } else {
-                callback({
-                  text: `Sorry, couldn't assemble a council for $${crypto}. Try again later!`,
-                  type: "text"
-                });
-                return;
-              }
+              // Store pending council but don't activate yet
+              const council = this.suggestCouncil(crypto);
+              console.log("Created pending council:", council);
+              return;
             }
+          }
+        }
+
+        // Check for council confirmation
+        if (text.includes("yes")) {
+          const pendingCouncils = Array.from(this.councils.values())
+            .filter(c => c.status === "pending");
+          
+          if (pendingCouncils.length > 0) {
+            const council = pendingCouncils[0];
+            const memberList = council.members.map(m => m.name).join(", @");
+            callback({
+              text: `Yo fam! Council #${council.id} for $${council.crypto} is ready! Got @${memberList} on deck! Reply 'confirm' to get their takes! 🚀`,
+              type: "text"
+            });
+            return;
           }
         }
 
@@ -278,5 +287,29 @@ export class CouncilPlugin implements Plugin {
 
   getCouncil(id: string): Council | undefined {
     return this.councils.get(id);
+  }
+
+  async getTokenTradeData(crypto: string): Promise<string> {
+    try {
+      // Mock data for demonstration - in production this would call real APIs
+      const mockData = {
+        price: Math.random() * 1000,
+        volume24h: Math.random() * 1000000,
+        marketCap: Math.random() * 1000000000,
+        priceChange24h: (Math.random() * 20) - 10,
+        holders: Math.floor(Math.random() * 100000),
+        liquidityUSD: Math.random() * 1000000
+      };
+
+      return `Price: $${mockData.price.toFixed(2)}
+24h Volume: $${mockData.volume24h.toLocaleString()}
+Market Cap: $${mockData.marketCap.toLocaleString()}
+24h Change: ${mockData.priceChange24h.toFixed(2)}%
+Holders: ${mockData.holders.toLocaleString()}
+Liquidity: $${mockData.liquidityUSD.toLocaleString()}`;
+    } catch (error) {
+      console.error("Error fetching token data:", error);
+      return "Error fetching token data";
+    }
   }
 }
