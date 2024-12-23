@@ -76,6 +76,9 @@ interface Council {
   riskLevel: RiskLevel;
   tokenData?: TokenData;
   memberAnalyses: Record<string, string>;
+  technicalScore?: number;
+  fundamentalScore?: number;
+  memePotential?: number;
 }
 
 interface CouncilRating {
@@ -333,7 +336,11 @@ export class CouncilPlugin implements Plugin {
       currentStage: 0,
       stages,
       riskLevel: 'medium',
-      tokenData
+      tokenData,
+      memberAnalyses: {},
+      technicalScore: 0,
+      fundamentalScore: 0,
+      memePotential: 0
     };
     
     this.councils.set(id, council);
@@ -361,9 +368,11 @@ export class CouncilPlugin implements Plugin {
     });
 
     // Calculate scores
-    council.technicalScore = Math.floor(Math.random() * 100);
-    council.fundamentalScore = Math.floor(Math.random() * 100);
-    council.memePotential = Math.floor(Math.random() * 100);
+    if (council) {
+      council.technicalScore = Math.floor(Math.random() * 100);
+      council.fundamentalScore = Math.floor(Math.random() * 100);
+      council.memePotential = Math.floor(Math.random() * 100);
+    }
     
     const avgRating = Object.values(council.ratings).reduce((a, b) => a + b, 0) / council.members.length;
     
