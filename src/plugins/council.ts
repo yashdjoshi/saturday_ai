@@ -27,6 +27,13 @@ interface TokenData {
   liquidityUSD: number;
 }
 
+interface AnalysisStage {
+  name: string;
+  completed: boolean;
+  score: number;
+  analysis: string;
+}
+
 interface Council {
   id: string;
   members: CouncilMember[];
@@ -34,9 +41,8 @@ interface Council {
   ratings: Record<string, number>;
   crypto: string;
   analysis: string;
-  technicalScore: number;
-  fundamentalScore: number;
-  memePotential: number;
+  currentStage: number;
+  stages: AnalysisStage[];
   riskLevel: RiskLevel;
   tokenData?: TokenData;
 }
