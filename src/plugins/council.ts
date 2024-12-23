@@ -512,38 +512,48 @@ export class CouncilPlugin implements Plugin {
   }
 
   private async startAnalysis(council: Council): Promise<string> {
-    // Generate mock data for each category
-    const analyses = await Promise.all(council.stages.map(stage => 
-      this.analyzeStage(council, stage)
-    ));
-    
-    // Store analyses
-    analyses.forEach((analysis, index) => {
-      council.stages[index].analysis = analysis.analysis;
-      council.stages[index].score = analysis.score;
-      council.stages[index].details = analysis.details;
-    });
+    try {
+      // Generate mock data for each category
+      const analyses = await Promise.all(
+        council.stages.map(stage => this.analyzeStage(council, stage))
+      );
+      
+      // Store analyses
+      analyses.forEach((analysis, index) => {
+        council.stages[index].analysis = analysis.analysis;
+        council.stages[index].score = analysis.score;
+        council.stages[index].details = analysis.details;
+      });
 
-    // Get council member ratings
-    const memberAnalyses = await this.getMemberAnalyses(council);
-    council.memberAnalyses = memberAnalyses;
+      // Get council member ratings
+      const memberAnalyses = await this.getMemberAnalyses(council);
+      council.memberAnalyses = memberAnalyses;
 
-    return this.formatAnalysis(council);
+      return this.formatAnalysis(council);
+    } catch (error) {
+      console.error("Error in startAnalysis:", error);
+      return "Error analyzing project. Please try again.";
+    }
   }
 
   private async getMemberAnalyses(council: Council): Promise<Record<string, string>> {
-    const analyses: Record<string, string> = {};
-    
-    for (const member of council.members) {
-      const analysis = await this.generateMemberAnalysis(member, council);
-      analyses[member.name] = analysis;
-      council.ratings[member.name] = {
-        score: Math.floor(Math.random() * 40) + 60, // 60-100 range
-        comment: this.generateMemberComment(member)
-      };
-    }
+    try {
+      const analyses: Record<string, string> = {};
+      
+      for (const member of council.members) {
+        const analysis = await this.generateMemberAnalysis(member, council);
+        analyses[member.name] = analysis;
+        council.ratings[member.name] = {
+          score: Math.floor(Math.random() * 40) + 60, // 60-100 range
+          comment: this.generateMemberComment(member)
+        };
+      }
 
-    return analyses;
+      return analyses;
+    } catch (error) {
+      console.error("Error in getMemberAnalyses:", error);
+      return {};
+    }
   }
 
   private generateMemberComment(member: CouncilMember): string {
@@ -563,20 +573,26 @@ export class CouncilPlugin implements Plugin {
   }
 
   private formatAnalysis(council: Council): string {
-    const stageAnalysis = council.stages
-      .map(stage => `${stage.name}: ${stage.score}/100\n${stage.analysis}`)
-      .join('\n\n');
-    
-    const memberAnalysis = Object.values(council.memberAnalyses).join('\n');
-    
-    const finalScore = Object.values(council.ratings)
-      .reduce((sum, rating) => sum + rating.score, 0) / council.members.length;
+    try {
+      const stageAnalysis = council.stages
+        .map(stage => `${stage.name}: ${stage.score}/100\n${stage.analysis}`)
+        .join('\n\n');
+      
+      const memberAnalysis = Object.values(council.memberAnalyses || {}).join('\n');
+      
+      const finalScore = Object.values(council.ratings)
+        .reduce((sum, rating) => sum + rating.score, 0) / 
+        (Object.keys(council.ratings).length || 1);
 
-    return `🔍 Analysis for $${council.crypto}\n\n` +
-           `${stageAnalysis}\n\n` +
-           `👥 Council Ratings:\n${memberAnalysis}\n\n` +
-           `📊 Final Score: ${finalScore.toFixed(1)}/100\n` +
-           `${this.generateSentiment(finalScore)}`;
+      return `🔍 Analysis for $${council.crypto}\n\n` +
+             `${stageAnalysis}\n\n` +
+             `👥 Council Ratings:\n${memberAnalysis}\n\n` +
+             `📊 Final Score: ${finalScore.toFixed(1)}/100\n` +
+             `${this.generateSentiment(finalScore)}`;
+    } catch (error) {
+      console.error("Error in formatAnalysis:", error);
+      return `Error formatting analysis for ${council.crypto}`;
+    }
   }
 
   private generateSentiment(score: number): string {
