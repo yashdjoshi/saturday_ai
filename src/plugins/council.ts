@@ -185,22 +185,16 @@ export class CouncilPlugin implements Plugin {
               const tokenData = await this.getTokenTradeData(crypto);
               
               // Show token stats immediately
-              callback({
-                text: `📊 Token Stats for $${crypto}:\n${this.formatTokenData(tokenData)}`,
-                type: "text"
-              });
-
               // Create and store council with token data
               const council = this.suggestCouncil(crypto, tokenData);
               console.log("Created council:", council);
               
-              // Show council members right after stats
-              const memberList = council.members.map(m => 
-                `@${m.name} (${m.expertise})\n"${m.catchphrase}"`
-              ).join("\n");
+              // Concise Twitter-friendly response
+              const stats = `$${crypto} @ $${tokenData.price.toFixed(2)} | ${tokenData.priceChange24h.toFixed(1)}% 24h`;
+              const members = council.members.map(m => `@${m.name}`).join(" ");
               
               callback({
-                text: `🎯 Proposed Council #${council.id} for $${crypto}:\n\n${memberList}\n\nReply 'confirm' to get their rating or suggest different members!`,
+                text: `📊 ${stats}\n\n🎯 Council #${council.id}:\n${members}\n\nSay 'confirm' for rating!`,
                 type: "text"
               });
               return;
@@ -289,7 +283,7 @@ export class CouncilPlugin implements Plugin {
       .map(m => `@${m.name} (${m.expertise}): ${council.ratings[m.name]}/10`)
       .join('\n');
 
-    return `🎯 ${council.crypto} Council Rating:\n\nOverall Score: ${avgRating.toFixed(1)}/10\n\nIndividual Ratings:\n${ratings}\n\n📊 Analysis:\nTechnical Score: ${council.technicalScore}/100\nFundamental Score: ${council.fundamentalScore}/100\nMeme Potential: ${council.memePotential}/100\nRisk Level: ${council.riskLevel.toUpperCase()}\n\n💭 Summary:\n${council.analysis}`;
+    return `🎯 $${council.crypto} Rating: ${avgRating.toFixed(1)}/10\n\n📊 Tech: ${council.technicalScore}/100 | Fund: ${council.fundamentalScore}/100 | Meme: ${council.memePotential}/100\n\nRisk: ${council.riskLevel.toUpperCase()}\n\n${council.analysis}`;
   }
 
   getCouncil(id: string): Council | undefined {
@@ -314,11 +308,6 @@ export class CouncilPlugin implements Plugin {
   }
 
   formatTokenData(data: TokenData): string {
-    return `Price: $${data.price.toFixed(2)}
-24h Volume: $${data.volume24h.toLocaleString()}
-Market Cap: $${data.marketCap.toLocaleString()}
-24h Change: ${data.priceChange24h.toFixed(2)}%
-Holders: ${data.holders.toLocaleString()}
-Liquidity: $${data.liquidityUSD.toLocaleString()}`;
+    return `$${data.price.toFixed(2)} | Vol: $${(data.volume24h/1e6).toFixed(1)}M | MCap: $${(data.marketCap/1e9).toFixed(1)}B | ${data.priceChange24h.toFixed(1)}% 24h`;
   }
 }
