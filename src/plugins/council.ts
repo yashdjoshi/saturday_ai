@@ -99,12 +99,12 @@ export class CouncilManager implements Plugin {
       description: "Handles messages related to crypto ratings and council confirmations.",
       examples: [
         [
-          { input: "Rate BTC", output: "Yo fam! Assembling council #1 to rate $BTC!" },
-          { input: "What do you think about ETH?", output: "Yo fam! Assembling council #2 to rate $ETH!" },
+          { text: "Rate BTC", response: "Yo fam! Assembling council #1 to rate $BTC!" },
+          { text: "What do you think about ETH?", response: "Yo fam! Assembling council #2 to rate $ETH!" }
         ],
         [
-          { input: "Confirm", output: "Council confirmed! Here's the rating: ..." },
-        ],
+          { text: "Confirm", response: "Council confirmed! Here's the rating: ..." }
+        ]
       ],
       validate: async (runtime, message) => {
         // Validation logic to determine if the action should run
@@ -135,10 +135,10 @@ export class CouncilManager implements Plugin {
 
         // Check for council confirmation
         if (text.includes("confirm")) {
-          const activeCouncils = Array.from(this.councils.values()).filter((c) => c.status === "pending");
+          const activeCouncils = Array.from(this.councils.values()).filter((c: Council) => c.status === "pending");
 
           if (activeCouncils.length > 0) {
-            const council = activeCouncils[0];
+            const council = activeCouncils[0] as Council;
             this.confirmCouncil(council.id);
 
             const rating = await this.collectRatings(council.id);
