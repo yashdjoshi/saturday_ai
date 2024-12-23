@@ -57,19 +57,12 @@ interface AnalysisStage {
   };
 }
 
-interface ProjectInfo {
-  address: string;
-  website: string;
-  twitter: string;
-}
-
 interface Council {
   id: string;
   members: CouncilMember[];
   status: CouncilStatus;
   ratings: Record<string, CouncilRating>;
   crypto: string;
-  projectInfo?: ProjectInfo;
   analysis: string;
   currentStage: number;
   stages: AnalysisStage[];
@@ -193,13 +186,14 @@ export class CouncilPlugin implements Plugin {
               console.log("Matched crypto:", matchedCrypto);
               const crypto = matchedCrypto.toUpperCase();
               
-              // Create pending council
+              // Get token data and start analysis immediately
               const tokenData = await this.getTokenTradeData(crypto);
               const council = this.suggestCouncil(crypto, tokenData);
-              console.log("Created council:", council);
+              council.status = 'active'; // Immediately activate the council
+              const analysis = await this.startAnalysis(council);
               
               callback({
-                text: `To rate $${crypto}, please provide:\n- Contract address\n- Website\n- Twitter handle\n\nFormat: address: 0x... website: https://... twitter: @...`,
+                text: analysis,
                 type: "text"
               });
               return;
@@ -207,32 +201,6 @@ export class CouncilPlugin implements Plugin {
           }
         }
 
-        // Extract project info if provided
-        const addressMatch = text.match(/address:\s*([^\s]+)/i);
-        const websiteMatch = text.match(/website:\s*([^\s]+)/i);
-        const twitterMatch = text.match(/twitter:\s*([^\s]+)/i);
-
-        if (addressMatch && websiteMatch && twitterMatch) {
-          const activeCouncil = Array.from(this.councils.values())
-            .find(c => c.status === 'pending' && !c.projectInfo);
-          
-          if (activeCouncil) {
-            activeCouncil.projectInfo = {
-              address: addressMatch[1],
-              website: websiteMatch[1],
-              twitter: twitterMatch[1]
-            };
-            
-            // Start the analysis process
-            activeCouncil.status = 'active';
-            const analysis = await this.startAnalysis(activeCouncil);
-            callback({
-              text: analysis,
-              type: "text"
-            });
-            return;
-          }
-        }
 
         // Check for progression commands
         if (text.includes("confirm") || text.includes("next")) {
@@ -608,6 +576,25 @@ export class CouncilPlugin implements Plugin {
       console.error("Error in formatAnalysis:", error);
       return `Error formatting analysis for ${council.crypto}`;
     }
+  }
+
+  private async getInitialAnalysis(crypto: string): Promise<Record<string, number>> {
+    // Mock initial analysis data
+    return {
+      technical: Math.floor(Math.random() * 100),
+      fundamental: Math.floor(Math.random() * 100),
+      social: Math.floor(Math.random() * 100),
+      market: Math.floor(Math.random() * 100),
+      risk: Math.floor(Math.random() * 100)
+    };
+  }
+
+  private formatInitialAnalysis(analysis: Record<string, number>): string {
+    return `Technical Score: ${analysis.technical}/100\n` +
+           `Fundamental Score: ${analysis.fundamental}/100\n` +
+           `Social Score: ${analysis.social}/100\n` +
+           `Market Score: ${analysis.market}/100\n` +
+           `Risk Score: ${analysis.risk}/100`;
   }
 
   private generateSentiment(score: number): string {
