@@ -131,6 +131,27 @@ export class CouncilPlugin implements Plugin {
         console.log("Handler called with message:", message.content.text);
         const text = message.content.text.toLowerCase();
 
+        // Check for confirmation command first
+        if (text.includes("confirm")) {
+          console.log("Detected confirm command");
+          const activeCouncils = Array.from(this.councils.values()).filter((c: Council) => c.status === "pending");
+          console.log("Active councils:", activeCouncils);
+
+          if (activeCouncils.length > 0) {
+            const council = activeCouncils[0] as Council;
+            console.log("Found pending council:", council);
+            this.confirmCouncil(council.id);
+
+            const rating = this.collectRatings(council.id);
+            console.log("Generated rating:", rating);
+            return {text: rating};
+          } else {
+            return {
+              text: "No active councils to confirm. Try starting a new one!"
+            };
+          }
+        }
+
         // Check if message is about rating a crypto
         if (text.includes("rate") || text.includes("what do you think about")) {
           console.log("Detected rate request");
@@ -160,34 +181,12 @@ export class CouncilPlugin implements Plugin {
               }
             }
           }
-
-          // Check for council confirmation
-          // Check for confirmation command
-          if (text.includes("confirm")) {
-            console.log("Detected confirm command");
-            const activeCouncils = Array.from(this.councils.values()).filter((c: Council) => c.status === "pending");
-            console.log("Active councils:", activeCouncils);
-
-            if (activeCouncils.length > 0) {
-              const council = activeCouncils[0] as Council;
-              console.log("Found pending council:", council);
-              this.confirmCouncil(council.id);
-
-              const rating = this.collectRatings(council.id);
-              console.log("Generated rating:", rating);
-              return {text: rating};
-            } else {
-              return {
-                text: "No active councils to confirm. Try starting a new one!"
-              };
-            }
-          }
-
-          // Default response if no conditions are met
-          return {
-            text: "I'm not sure what you're asking. Try 'rate BTC' or 'confirm'."
-          };
         }
+
+        // Default response if no conditions are met
+        return {
+          text: "I'm not sure what you're asking. Try 'rate BTC' or 'confirm'."
+        };
       },
     });
   }
