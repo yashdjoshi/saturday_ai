@@ -25,7 +25,6 @@ import {
 import { bootstrapPlugin } from "@ai16z/plugin-bootstrap";
 import { solanaPlugin } from "@ai16z/plugin-solana";
 import { nodePlugin } from "@ai16z/plugin-node";
-import { councilPlugin } from "./plugins/council-plugin";
 import Database from "better-sqlite3";
 import fs from "fs";
 import readline from "readline";
@@ -221,7 +220,6 @@ export function createAgent(
     plugins: [
       bootstrapPlugin,
       nodePlugin,
-      councilPlugin,
       character.settings.secrets?.WALLET_PUBLIC_KEY ? solanaPlugin : null,
     ].filter(Boolean),
     providers: [],
