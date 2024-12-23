@@ -18,6 +18,15 @@ interface CouncilMember {
 type RiskLevel = 'low' | 'medium' | 'high';
 type CouncilStatus = 'pending' | 'active' | 'complete';
 
+interface TokenData {
+  price: number;
+  volume24h: number;
+  marketCap: number;
+  priceChange24h: number;
+  holders: number;
+  liquidityUSD: number;
+}
+
 interface Council {
   id: string;
   members: CouncilMember[];
@@ -29,6 +38,7 @@ interface Council {
   fundamentalScore: number;
   memePotential: number;
   riskLevel: RiskLevel;
+  tokenData?: TokenData;
 }
 
 interface CouncilRating {
@@ -171,15 +181,17 @@ export class CouncilPlugin implements Plugin {
               console.log("Matched crypto:", matchedCrypto);
               const crypto = matchedCrypto.toUpperCase();
               
-              // Get token trade data and show it immediately
+              // Get token trade data
               const tokenData = await this.getTokenTradeData(crypto);
+              
+              // Show token stats immediately
               callback({
-                text: `📊 Token Stats for $${crypto}:\n${tokenData}`,
+                text: `📊 Token Stats for $${crypto}:\n${this.formatTokenData(tokenData)}`,
                 type: "text"
               });
 
-              // Create and store council immediately
-              const council = this.suggestCouncil(crypto);
+              // Create and store council with token data
+              const council = this.suggestCouncil(crypto, tokenData);
               console.log("Created council:", council);
               
               // Show council members right after stats
@@ -206,7 +218,7 @@ export class CouncilPlugin implements Plugin {
     });
   }
 
-  suggestCouncil(crypto: string): Council {
+  suggestCouncil(crypto: string, tokenData: TokenData): Council {
     const id = Math.random().toString(36).substring(7);
     // Select 3 random members with their full profiles
     const members = [...this.councilMembers]
@@ -223,7 +235,8 @@ export class CouncilPlugin implements Plugin {
       technicalScore: 0,
       fundamentalScore: 0,
       memePotential: 0,
-      riskLevel: 'medium'
+      riskLevel: 'medium',
+      tokenData
     };
     
     this.councils.set(id, council);
@@ -283,10 +296,10 @@ export class CouncilPlugin implements Plugin {
     return this.councils.get(id);
   }
 
-  async getTokenTradeData(crypto: string): Promise<string> {
+  async getTokenTradeData(crypto: string): Promise<TokenData> {
     try {
       // Mock data for demonstration - in production this would call real APIs
-      const mockData = {
+      return {
         price: Math.random() * 1000,
         volume24h: Math.random() * 1000000,
         marketCap: Math.random() * 1000000000,
@@ -294,16 +307,18 @@ export class CouncilPlugin implements Plugin {
         holders: Math.floor(Math.random() * 100000),
         liquidityUSD: Math.random() * 1000000
       };
-
-      return `Price: $${mockData.price.toFixed(2)}
-24h Volume: $${mockData.volume24h.toLocaleString()}
-Market Cap: $${mockData.marketCap.toLocaleString()}
-24h Change: ${mockData.priceChange24h.toFixed(2)}%
-Holders: ${mockData.holders.toLocaleString()}
-Liquidity: $${mockData.liquidityUSD.toLocaleString()}`;
     } catch (error) {
       console.error("Error fetching token data:", error);
-      return "Error fetching token data";
+      throw error;
     }
+  }
+
+  formatTokenData(data: TokenData): string {
+    return `Price: $${data.price.toFixed(2)}
+24h Volume: $${data.volume24h.toLocaleString()}
+Market Cap: $${data.marketCap.toLocaleString()}
+24h Change: ${data.priceChange24h.toFixed(2)}%
+Holders: ${data.holders.toLocaleString()}
+Liquidity: $${data.liquidityUSD.toLocaleString()}`;
   }
 }
