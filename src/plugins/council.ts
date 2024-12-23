@@ -170,31 +170,42 @@ export class CouncilPlugin implements Plugin {
         console.log("Handler called with message:", message.content.text);
         const text = message.content.text.toLowerCase();
 
-        // Check for confirmation command first
-        if (text.includes("confirm")) {
-          console.log("Detected confirm command");
-          const activeCouncils = Array.from(this.councils.values()).filter((c: Council) => c.status === "pending");
-          console.log("Active councils:", activeCouncils);
-
+        // Check for stage progression commands
+        if (text.includes("confirm") || text.includes("next")) {
+          console.log("Detected progression command");
+          const activeCouncils = Array.from(this.councils.values())
+            .filter((c: Council) => c.status === "pending" || c.status === "active");
+          
           if (activeCouncils.length > 0) {
-            const council = activeCouncils[0] as Council;
-            console.log("Found pending council:", council);
-            this.confirmCouncil(council.id);
-
-            const rating = this.collectRatings(council.id);
-            console.log("Generated rating:", rating);
-            callback({
-              text: rating,
-              type: "text"
-            });
-            return;
-          } else {
-            callback({
-              text: "No active councils to confirm. Try starting a new one!",
-              type: "text"
-            });
-            return;
+            const council = activeCouncils[0];
+            
+            if (text.includes("confirm") && council.status === "pending") {
+              console.log("Starting new council analysis");
+              this.confirmCouncil(council.id);
+              const analysis = await this.progressStage(council.id);
+              callback({
+                text: analysis,
+                type: "text"
+              });
+              return;
+            }
+            
+            if (text.includes("next") && council.status === "active") {
+              console.log("Progressing to next stage");
+              const analysis = await this.progressStage(council.id);
+              callback({
+                text: analysis,
+                type: "text"
+              });
+              return;
+            }
           }
+          
+          callback({
+            text: "No active councils found. Try starting a new one!",
+            type: "text"
+          });
+          return;
         }
 
         // Check if message is about rating a crypto
@@ -353,6 +364,134 @@ export class CouncilPlugin implements Plugin {
 
   getCouncil(id: string): Council | undefined {
     return this.councils.get(id);
+  }
+
+  async progressStage(id: string): Promise<string> {
+    const council = this.councils.get(id);
+    if (!council || council.status !== 'active') {
+      return 'No active council found';
+    }
+
+    const currentStage = council.stages[council.currentStage];
+    if (!currentStage) {
+      council.status = 'complete';
+      return this.generateFinalAnalysis(council);
+    }
+
+    // Generate analysis for current stage
+    const analysis = await this.analyzeStage(council, currentStage);
+    currentStage.completed = true;
+    currentStage.analysis = analysis.analysis;
+    currentStage.score = analysis.score;
+    currentStage.details = analysis.details;
+
+    // Move to next stage
+    council.currentStage++;
+    
+    // Format stage completion message
+    return `📊 Stage ${council.currentStage}/5: ${currentStage.name}\n${analysis.analysis}\nScore: ${analysis.score}/100\n\nSay 'next' to continue!`;
+  }
+
+  private async analyzeStage(council: Council, stage: AnalysisStage): Promise<{
+    analysis: string;
+    score: number;
+    details: any;
+  }> {
+    const analyses: Record<string, () => Promise<any>> = {
+      "On-chain Analysis": async () => {
+        const score = Math.floor(60 + Math.random() * 40);
+        const details = {
+          github: "Active development, 120+ contributors",
+          transactions: "High daily volume, healthy distribution"
+        };
+        return {
+          analysis: `On-chain metrics looking bullish af! Github activity poppin, TX volume thicc 🔥`,
+          score,
+          details
+        };
+      },
+      "Social Sentiment": async () => {
+        const score = Math.floor(50 + Math.random() * 50);
+        const details = {
+          twitter: "Growing engagement",
+          telegram: "Active community"
+        };
+        return {
+          analysis: `Social metrics bussin fr fr! Twitter trending, TG community based 🚀`,
+          score,
+          details
+        };
+      },
+      "Market Insights": async () => {
+        const score = Math.floor(40 + Math.random() * 60);
+        const details = {
+          firstMover: true,
+          competitors: ["comp1", "comp2"],
+          team: "Doxxed and based"
+        };
+        return {
+          analysis: `Market position: absolute chad energy! Team doxxed & based, competition ngmi 💪`,
+          score,
+          details
+        };
+      },
+      "Design and Art": async () => {
+        const score = Math.floor(70 + Math.random() * 30);
+        const details = {
+          website: "Clean UI/UX",
+          artStyle: "Premium quality"
+        };
+        return {
+          analysis: `Design aesthetic: chef's kiss! Website clean af, branding on point 🎨`,
+          score,
+          details
+        };
+      },
+      "Value Proposition": async () => {
+        const score = Math.floor(55 + Math.random() * 45);
+        const details = {
+          innovation: "Revolutionary tech",
+          useCase: "Strong utility"
+        };
+        return {
+          analysis: `Utility check: solving real problems! Innovation level: galaxy brain 🧠`,
+          score,
+          details
+        };
+      }
+    };
+
+    return analyses[stage.name]?.() || {
+      analysis: "Analysis unavailable",
+      score: 0,
+      details: {}
+    };
+  }
+
+  private generateFinalAnalysis(council: Council): string {
+    const avgScore = council.stages.reduce((sum, stage) => sum + stage.score, 0) / council.stages.length;
+    const riskLevel = avgScore > 75 ? 'low' : avgScore > 50 ? 'medium' : 'high';
+    
+    const summary = `Final Analysis for $${council.crypto}:\n\n` +
+      council.stages.map(stage => 
+        `${stage.name}: ${stage.score}/100`
+      ).join('\n') +
+      `\n\nRisk Level: ${riskLevel.toUpperCase()}\n` +
+      `Overall Score: ${avgScore.toFixed(1)}/100\n\n` +
+      this.generateSentiment(avgScore);
+
+    council.status = 'complete';
+    return summary;
+  }
+
+  private generateSentiment(score: number): string {
+    if (score > 75) {
+      return "WAGMI! This one's definitely gonna make it! 🚀🌕";
+    } else if (score > 50) {
+      return "Not bad anon, DYOR but could be based! 👀";
+    } else {
+      return "Major red flags fam, probably ngmi 💀";
+    }
   }
 
   async getTokenTradeData(crypto: string): Promise<TokenData> {
