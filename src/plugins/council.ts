@@ -125,11 +125,13 @@ export class CouncilPlugin implements Plugin {
     }
   ];
 
+  private activeCouncil: Council | null = null;
+
   async initialize(runtime: IAgentRuntime): Promise<void> {
     runtime.registerAction({
       name: "handleCryptoMessages",
-      similes: ["crypto rating", "rate crypto", "crypto council"], // Alternative triggers
-      description: "Handles messages related to crypto ratings and council confirmations.",
+      similes: ["crypto rating", "rate crypto", "crypto council"],
+      description: "Handles messages related to crypto ratings and council confirmations",
       examples: [
         [
           {
@@ -173,9 +175,8 @@ export class CouncilPlugin implements Plugin {
         console.log("Handler called with message:", message.content.text);
         const text = message.content.text.toLowerCase();
         
-        // Check if message is about rating a crypto
+        // Handle rating requests
         if (text.includes("rate") || text.includes("what do you think about")) {
-          console.log("Detected rate request");
           const supportedCryptos = ["btc", "eth", "sol", "doge", "shib"];
           const rateRegex = /(?:rate|about)\s+(\w+)(?:[^a-zA-Z]|$)/i;
           const cryptoMatch = text.match(rateRegex);
@@ -183,26 +184,21 @@ export class CouncilPlugin implements Plugin {
           if (cryptoMatch && cryptoMatch[1]) {
             const matchedCrypto = cryptoMatch[1].toLowerCase();
             if (supportedCryptos.includes(matchedCrypto)) {
-              console.log("Matched crypto:", matchedCrypto);
               const crypto = matchedCrypto.toUpperCase();
               
-              // Get token data and start analysis immediately
+              // Get token data and create new council
               const tokenData = await this.getTokenTradeData(crypto);
               const council = this.suggestCouncil(crypto, tokenData);
-              council.status = 'active'; // Immediately activate the council
+              this.activeCouncil = council;
+
+              // Generate and show initial analysis
               const analysis = await this.startAnalysis(council);
-              
-              // First message: Show analysis categories
-              const analysisMsg = council.stages.map(stage => 
-                `${stage.name}: ${stage.score}/100\n${stage.analysis}`
-              ).join('\n\n');
-      
               callback({
-                text: `🔍 Initial Analysis for $${crypto}:\n\n${analysisMsg}`,
+                text: `🔍 Initial Analysis for $${crypto}:\n\n${analysis}`,
                 type: "text"
               });
 
-              // Second message: Show suggested council
+              // Show council suggestion in separate message
               const councilMsg = `👥 Suggested Council:\n` +
                 council.members.map(m => `- ${m.name} (${m.expertise})\n  "${m.catchphrase}"`).join('\n') +
                 `\n\nReply 'confirm' to proceed or 'change' for new council`;
@@ -216,43 +212,38 @@ export class CouncilPlugin implements Plugin {
           }
         }
 
+        // Handle confirmation
+        if (text.toLowerCase() === "confirm") {
+          if (this.activeCouncil) {
+            const council = this.activeCouncil;
+            council.status = 'active';
+            
+            // Generate ratings
+            council.members.forEach(member => {
+              council.ratings[member.name] = {
+                memberName: member.name,
+                score: Math.floor(Math.random() * 4) + 6, // 6-10 range
+                comment: this.generateMemberComment(member)
+              };
+            });
 
-        // Check for progression commands
-        if (text.includes("confirm") || text.includes("next")) {
-          console.log("Detected progression command");
-          const activeCouncils = Array.from(this.councils.values())
-            .filter((c: Council) => c.status === "pending" || c.status === "active");
-          
-          if (activeCouncils.length > 0) {
-            const council = activeCouncils[0];
-            
-            if (text.includes("confirm") && council.status === "pending") {
-              console.log("Starting new council analysis");
-              this.confirmCouncil(council.id);
-              const analysis = await this.progressStage(council.id);
-              callback({
-                text: analysis,
-                type: "text"
-              });
-              return;
-            }
-            
-            if (text.includes("next") && council.status === "active") {
-              console.log("Progressing to next stage");
-              const analysis = await this.progressStage(council.id);
-              callback({
-                text: analysis,
-                type: "text"
-              });
-              return;
-            }
+            // Calculate final rating
+            const ratings = Object.values(council.ratings);
+            const avgRating = ratings.reduce((sum, r) => sum + r.score, 0) / ratings.length;
+
+            const response = `Council Ratings for $${council.crypto}:\n\n` +
+              ratings.map(r => `${r.memberName}: ${r.score}/10 - "${r.comment}"`).join('\n') +
+              `\n\nOverall Rating: ${avgRating.toFixed(1)}/10\n` +
+              this.generateSentiment(avgRating * 10); // Convert to 100 scale for sentiment
+
+            callback({
+              text: response,
+              type: "text"
+            });
+
+            this.activeCouncil = null; // Reset active council
+            return;
           }
-          
-          callback({
-            text: "No active councils found. Try starting a new one!",
-            type: "text"
-          });
-          return;
         }
 
         // Default response if no conditions are met
