@@ -138,8 +138,9 @@ export class CouncilPlugin implements Plugin {
             const council = this.suggestCouncil(crypto);
 
             if (council) {
+              const memberList = council.members.map(m => m.name).join(", @");
               return {
-                text: `Yo fam! Assembling council #${council.id} to rate $${crypto}! Got @${council.members.map((m) => m.name).join(" @")} on deck! Reply 'confirm' to get their takes! 🚀`
+                text: `Yo fam! Assembling council #${council.id} to rate $${crypto}! Got @${memberList} on deck! Reply 'confirm' to get their takes! 🚀`
               };
             } else {
               return {
