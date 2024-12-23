@@ -45,7 +45,7 @@ interface CouncilAnalysis {
   summary: string;
 }
 
-export class councilPlugin implements Plugin {
+export class CouncilPlugin implements Plugin {
   name = "council";
   description = "Manages crypto rating councils";
   private councils: Map<string, Council>;

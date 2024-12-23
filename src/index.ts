@@ -33,7 +33,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { character } from "./character.ts";
 import type { DirectClient } from "@ai16z/client-direct";
-import {councilPlugin, CouncilPlugin} from "./plugins/council";
+import {CouncilPlugin} from "./plugins/council";
 
 const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
 const __dirname = path.dirname(__filename); // get the name of the directory
@@ -224,7 +224,7 @@ export function createAgent(
       bootstrapPlugin,
       nodePlugin,
       character.settings.secrets?.WALLET_PUBLIC_KEY ? solanaPlugin : null,
-      councilPlugin,
+      new CouncilPlugin(),
     ].filter(Boolean),
     providers: [],
     actions: [],
@@ -268,10 +268,6 @@ async function startAgent(character: Character, directClient: DirectClient) {
     await runtime.initialize();
     
     // Initialize the council plugin
-    const councilPlugin = runtime.plugins.find(p => p.name === "councilPlugin");
-    if (councilPlugin) {
-      await councilPlugin.initialize(runtime);
-    }
 
     const clients = await initializeClients(character, runtime);
 
