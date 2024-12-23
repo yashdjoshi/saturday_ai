@@ -57,17 +57,25 @@ interface AnalysisStage {
   };
 }
 
+interface ProjectInfo {
+  address: string;
+  website: string;
+  twitter: string;
+}
+
 interface Council {
   id: string;
   members: CouncilMember[];
   status: CouncilStatus;
-  ratings: Record<string, number>;
+  ratings: Record<string, CouncilRating>;
   crypto: string;
+  projectInfo?: ProjectInfo;
   analysis: string;
   currentStage: number;
   stages: AnalysisStage[];
   riskLevel: RiskLevel;
   tokenData?: TokenData;
+  memberAnalyses: Record<string, string>;
 }
 
 interface CouncilRating {
@@ -169,9 +177,35 @@ export class CouncilPlugin implements Plugin {
       handler: async (runtime: IAgentRuntime, message: Memory, state: State, options: any, callback: any) => {
         console.log("Handler called with message:", message.content.text);
         const text = message.content.text.toLowerCase();
+        
+        // Extract project info if provided
+        const addressMatch = text.match(/address:\s*([^\s]+)/i);
+        const websiteMatch = text.match(/website:\s*([^\s]+)/i);
+        const twitterMatch = text.match(/twitter:\s*([^\s]+)/i);
 
-        // Check for stage progression commands
-        if (text.includes("confirm") || text.includes("next")) {
+        if (addressMatch && websiteMatch && twitterMatch) {
+          const activeCouncil = Array.from(this.councils.values())
+            .find(c => c.status === 'pending' && !c.projectInfo);
+          
+          if (activeCouncil) {
+            activeCouncil.projectInfo = {
+              address: addressMatch[1],
+              website: websiteMatch[1],
+              twitter: twitterMatch[1]
+            };
+            
+            // Start the analysis process
+            activeCouncil.status = 'active';
+            const analysis = await this.startAnalysis(activeCouncil);
+            callback({
+              text: analysis,
+              type: "text"
+            });
+            return;
+          }
+        }
+
+        // Check for rating request
           console.log("Detected progression command");
           const activeCouncils = Array.from(this.councils.values())
             .filter((c: Council) => c.status === "pending" || c.status === "active");
@@ -221,20 +255,12 @@ export class CouncilPlugin implements Plugin {
               console.log("Matched crypto:", matchedCrypto);
               const crypto = matchedCrypto.toUpperCase();
               
-              // Get token trade data
-              const tokenData = await this.getTokenTradeData(crypto);
-              
-              // Show token stats immediately
-              // Create and store council with token data
-              const council = this.suggestCouncil(crypto, tokenData);
+              // Create pending council
+              const council = this.suggestCouncil(crypto);
               console.log("Created council:", council);
               
-              // Concise Twitter-friendly response
-              const stats = `$${crypto} @ $${tokenData.price.toFixed(2)} | ${tokenData.priceChange24h.toFixed(1)}% 24h`;
-              const members = council.members.map(m => `@${m.name}`).join(" ");
-              
               callback({
-                text: `📊 ${stats}\n\n🎯 Council #${council.id}:\n${members}\n\nSay 'confirm' for rating!`,
+                text: `To rate $${crypto}, please provide:\n- Contract address\n- Website\n- Twitter handle\n\nFormat: address: 0x... website: https://... twitter: @...`,
                 type: "text"
               });
               return;
@@ -482,6 +508,74 @@ export class CouncilPlugin implements Plugin {
 
     council.status = 'complete';
     return summary;
+  }
+
+  private async startAnalysis(council: Council): Promise<string> {
+    // Generate mock data for each category
+    const analyses = await Promise.all(council.stages.map(stage => 
+      this.analyzeStage(council, stage)
+    ));
+    
+    // Store analyses
+    analyses.forEach((analysis, index) => {
+      council.stages[index].analysis = analysis.analysis;
+      council.stages[index].score = analysis.score;
+      council.stages[index].details = analysis.details;
+    });
+
+    // Get council member ratings
+    const memberAnalyses = await this.getMemberAnalyses(council);
+    council.memberAnalyses = memberAnalyses;
+
+    return this.formatAnalysis(council);
+  }
+
+  private async getMemberAnalyses(council: Council): Promise<Record<string, string>> {
+    const analyses: Record<string, string> = {};
+    
+    for (const member of council.members) {
+      const analysis = await this.generateMemberAnalysis(member, council);
+      analyses[member.name] = analysis;
+      council.ratings[member.name] = {
+        score: Math.floor(Math.random() * 40) + 60, // 60-100 range
+        comment: this.generateMemberComment(member)
+      };
+    }
+
+    return analyses;
+  }
+
+  private generateMemberComment(member: CouncilMember): string {
+    const comments = {
+      'CryptoSage': 'Charts looking absolutely based!',
+      'TokenWhisperer': 'Tokenomics check out, ser',
+      'BlockchainOracle': 'On-chain metrics bullish af',
+      'DeFiGuru': 'Smart contracts looking clean',
+      'ChartMaster': 'Market structure is valid'
+    };
+    return comments[member.name] || 'Looking bullish!';
+  }
+
+  private async generateMemberAnalysis(member: CouncilMember, council: Council): Promise<string> {
+    return `${member.name} (${member.expertise}): "${member.catchphrase}"\n` +
+           `Rating: ${council.ratings[member.name]?.score || 0}/100`;
+  }
+
+  private formatAnalysis(council: Council): string {
+    const stageAnalysis = council.stages
+      .map(stage => `${stage.name}: ${stage.score}/100\n${stage.analysis}`)
+      .join('\n\n');
+    
+    const memberAnalysis = Object.values(council.memberAnalyses).join('\n');
+    
+    const finalScore = Object.values(council.ratings)
+      .reduce((sum, rating) => sum + rating.score, 0) / council.members.length;
+
+    return `🔍 Analysis for $${council.crypto}\n\n` +
+           `${stageAnalysis}\n\n` +
+           `👥 Council Ratings:\n${memberAnalysis}\n\n` +
+           `📊 Final Score: ${finalScore.toFixed(1)}/100\n` +
+           `${this.generateSentiment(finalScore)}`;
   }
 
   private generateSentiment(score: number): string {
