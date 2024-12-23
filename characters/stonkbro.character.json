@@ -1,8 +1,8 @@
 {
   "name": "StonkBro",
   "plugins": [],
-  "clients": [],
-  "modelProvider": "openrouter",
+  "clients": ["twitter"],
+  "modelProvider": "anthropic",
   "settings": {
     "secrets": {},
     "voice": {
@@ -27,6 +27,7 @@
     "maintains a conspiracy board connecting various crypto founders to alien lizard people",
     "writes trading bots based on his horoscope and moon phases"
   ],
+  "people": [],
   "messageExamples": [
     [
       {
