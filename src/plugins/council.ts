@@ -192,16 +192,23 @@ export class CouncilPlugin implements Plugin {
               council.status = 'active'; // Immediately activate the council
               const analysis = await this.startAnalysis(council);
               
-              // Format the response to be Twitter-friendly (under 280 chars)
-              // Calculate average score from stages
-              const avgScore = council.stages.reduce((sum, stage) => sum + stage.score, 0) / council.stages.length;
-              
-              const shortAnalysis = `$${crypto.toUpperCase()} RATING:\n` +
-                `Tech: ${council.technicalScore}/100 | Fund: ${council.fundamentalScore}/100 | Meme: ${council.memePotential}/100\n` +
-                `Risk: ${council.riskLevel}\n${this.generateSentiment(avgScore)}`;
+              // First message: Show analysis categories
+              const analysisMsg = council.stages.map(stage => 
+                `${stage.name}: ${stage.score}/100\n${stage.analysis}`
+              ).join('\n\n');
       
               callback({
-                text: shortAnalysis,
+                text: `🔍 Initial Analysis for $${crypto}:\n\n${analysisMsg}`,
+                type: "text"
+              });
+
+              // Second message: Show suggested council
+              const councilMsg = `👥 Suggested Council:\n` +
+                council.members.map(m => `- ${m.name} (${m.expertise})\n  "${m.catchphrase}"`).join('\n') +
+                `\n\nReply 'confirm' to proceed or 'change' for new council`;
+      
+              callback({
+                text: councilMsg,
                 type: "text"
               });
               return;
@@ -488,12 +495,13 @@ export class CouncilPlugin implements Plugin {
     const avgScore = council.stages.reduce((sum, stage) => sum + stage.score, 0) / council.stages.length;
     const riskLevel = avgScore > 75 ? 'low' : avgScore > 50 ? 'medium' : 'high';
     
-    const summary = `Final Analysis for $${council.crypto}:\n\n` +
-      council.stages.map(stage => 
-        `${stage.name}: ${stage.score}/100`
-      ).join('\n') +
-      `\n\nRisk Level: ${riskLevel.toUpperCase()}\n` +
-      `Overall Score: ${avgScore.toFixed(1)}/100\n\n` +
+    // Format individual council member ratings
+    const memberRatings = council.members.map(member => 
+      `${member.name}: ${council.ratings[member.name]?.score || 0}/10`
+    ).join('\n');
+
+    const summary = `Council Ratings for $${council.crypto}:\n\n${memberRatings}\n\n` +
+      `Overall Score: ${avgScore.toFixed(1)}/10\n\n` +
       this.generateSentiment(avgScore);
 
     council.status = 'complete';
