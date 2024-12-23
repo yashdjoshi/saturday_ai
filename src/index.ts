@@ -267,8 +267,6 @@ async function startAgent(character: Character, directClient: DirectClient) {
 
     await runtime.initialize();
 
-    // Initialize the council manager plugin
-    await councilManager.initialize(runtime);
 
     const clients = await initializeClients(character, runtime);
 

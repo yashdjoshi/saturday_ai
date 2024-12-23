@@ -171,14 +171,32 @@ const councilAction: Action = {
   similes: ["crypto rating", "rate crypto", "crypto council"],
   description: "Handles messages related to crypto ratings and council confirmations.",
   examples: [
-    {
-      input: { content: { text: "Rate BTC" } },
-      output: { content: { text: "Yo fam! Assembling council #1 to rate $BTC!", action: "handleCryptoMessages" } }
-    },
-    {
-      input: { content: { text: "Confirm" } },
-      output: { content: { text: "Council confirmed! Here's the rating...", action: "handleCryptoMessages" } }
-    }
+    [
+      {
+        user: "{{user1}}",
+        content: { text: "Rate BTC" }
+      },
+      {
+        user: "{{agentName}}", 
+        content: { 
+          text: "Yo fam! Assembling council #1 to rate $BTC!",
+          action: "handleCryptoMessages"
+        }
+      }
+    ],
+    [
+      {
+        user: "{{user1}}",
+        content: { text: "Confirm" }
+      },
+      {
+        user: "{{agentName}}",
+        content: {
+          text: "Council confirmed! Here's the rating...",
+          action: "handleCryptoMessages"
+        }
+      }
+    ]
   ],
   validate: async (runtime: IAgentRuntime, message: Memory) => {
     const text = message.content.text.toLowerCase();
