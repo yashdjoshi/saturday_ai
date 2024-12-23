@@ -1,6 +1,6 @@
 {
   "name": "StonkBro",
-  "plugins": [],
+  "plugins": ["council"],
   "clients": ["twitter"],
   "modelProvider": "anthropic",
   "settings": {
