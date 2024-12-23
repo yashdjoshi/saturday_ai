@@ -268,30 +268,12 @@ export class CouncilPlugin implements Plugin {
     council.analysis = analyses[sentiment];
     council.status = 'complete';
 
-    // Format the response as a series of tweet-sized chunks
-    const tweets = [];
-    
-    // Tweet 1: Overall rating and risk
-    tweets.push(
-      `${council.crypto} Council Rating 🎯\n` +
-      `Overall: ${avgRating.toFixed(1)}/10\n` +
-      `Risk: ${council.riskLevel.toUpperCase()}\n` +
-      `Tech: ${council.technicalScore}/100 | Fund: ${council.fundamentalScore}/100 | Meme: ${council.memePotential}/100`
-    );
-
-    // Tweet 2: Analysis
-    tweets.push(council.analysis);
-
-    // Tweet 3: Individual ratings (compressed format)
+    // Format a single concise response with ratings
     const ratings = council.members
       .map(m => `${m.name}: ${council.ratings[m.name]}/10`)
       .join(' | ');
-    tweets.push(`Council Votes:\n${ratings}`);
 
-    // Add tweet numbering
-    return tweets
-      .map((tweet, i) => `${i + 1}/${tweets.length} ${tweet}`)
-      .join('\n\n---\n\n');
+    return `${council.crypto} Council Rating 🎯\nOverall: ${avgRating.toFixed(1)}/10\n\nVotes:\n${ratings}`;
   }
 
   getCouncil(id: string): Council | undefined {
