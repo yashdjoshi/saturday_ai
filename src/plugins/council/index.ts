@@ -158,6 +158,10 @@ class CouncilManager {
   getCouncil(id: string): Council | undefined {
     return this.councils.get(id);
   }
+
+  getActiveCouncils(): Council[] {
+    return Array.from(this.councils.values()).filter(c => c.status === 'pending');
+  }
 }
 
 const manager = new CouncilManager();
@@ -167,32 +171,14 @@ const councilAction: Action = {
   similes: ["crypto rating", "rate crypto", "crypto council"],
   description: "Handles messages related to crypto ratings and council confirmations.",
   examples: [
-    [
-      {
-        user: "{{user1}}",
-        content: { text: "Rate BTC" }
-      },
-      {
-        user: "{{agentName}}", 
-        content: {
-          text: "Yo fam! Assembling council #1 to rate $BTC!",
-          action: "handleCryptoMessages"
-        }
-      }
-    ],
-    [
-      {
-        user: "{{user1}}",
-        content: { text: "Confirm" }
-      },
-      {
-        user: "{{agentName}}",
-        content: {
-          text: "Council confirmed! Here's the rating...",
-          action: "handleCryptoMessages"
-        }
-      }
-    ]
+    {
+      input: { content: { text: "Rate BTC" } },
+      output: { content: { text: "Yo fam! Assembling council #1 to rate $BTC!", action: "handleCryptoMessages" } }
+    },
+    {
+      input: { content: { text: "Confirm" } },
+      output: { content: { text: "Council confirmed! Here's the rating...", action: "handleCryptoMessages" } }
+    }
   ],
   validate: async (runtime: IAgentRuntime, message: Memory) => {
     const text = message.content.text.toLowerCase();
@@ -200,7 +186,7 @@ const councilAction: Action = {
            text.includes("what do you think about") || 
            text.includes("confirm");
   },
-  handler: async (runtime: IAgentRuntime, message: Memory, state: State) => {
+  handler: async (runtime: IAgentRuntime, message: Memory, state: State, options: any, callback: any) => {
     const text = message.content.text.toLowerCase();
 
     // Check if message is about rating a crypto
@@ -227,7 +213,7 @@ const councilAction: Action = {
 
     // Check for council confirmation
     if (text.includes("confirm")) {
-      const activeCouncils = Array.from(manager.councils.values())
+      const activeCouncils = Array.from(Object.values(manager.getActiveCouncils()))
         .filter((c: Council) => c.status === "pending");
 
       if (activeCouncils.length > 0) {

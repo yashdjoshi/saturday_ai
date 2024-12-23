@@ -162,7 +162,7 @@ function initializeDatabase(dataDir: string) {
   }
 }
 
-const councilManager = new CouncilManager();
+// Council manager is now part of the plugin
 
 export async function initializeClients(
   character: Character,
