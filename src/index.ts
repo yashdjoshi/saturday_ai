@@ -266,7 +266,12 @@ async function startAgent(character: Character, directClient: DirectClient) {
     const runtime = createAgent(character, db, cache, token);
 
     await runtime.initialize();
-
+    
+    // Initialize the council plugin
+    const councilPlugin = runtime.plugins.find(p => p.name === "council");
+    if (councilPlugin) {
+      await councilPlugin.initialize(runtime);
+    }
 
     const clients = await initializeClients(character, runtime);
 
