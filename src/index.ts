@@ -224,7 +224,7 @@ export function createAgent(
       bootstrapPlugin,
       nodePlugin,
       character.settings.secrets?.WALLET_PUBLIC_KEY ? solanaPlugin : null,
-      new CouncilManager(),
+      councilManager,
     ].filter(Boolean),
     providers: [],
     actions: [],
@@ -266,6 +266,9 @@ async function startAgent(character: Character, directClient: DirectClient) {
     const runtime = createAgent(character, db, cache, token);
 
     await runtime.initialize();
+    
+    // Initialize the council manager plugin
+    await councilManager.initialize(runtime);
 
     const clients = await initializeClients(character, runtime);
 
