@@ -52,7 +52,7 @@ export class CouncilManager implements Plugin {
   ];
 
   async initialize(runtime: IAgentRuntime): Promise<void> {
-    runtime.messageManager.addMessageHandler('beforeMessage', async (message) => {
+    runtime.messageManager.registerMessageHandler('beforeMessage', async (message) => {
       const text = message.content.text.toLowerCase();
       
       // Check if message is about rating a crypto
