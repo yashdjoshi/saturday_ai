@@ -1,4 +1,4 @@
-import { IAgentRuntime, Plugin } from "@ai16z/eliza";
+import {IAgentRuntime, Memory, Plugin, State} from "@ai16z/eliza";
 
 interface ActionContext {
   message: {
