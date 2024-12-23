@@ -192,8 +192,13 @@ export class CouncilPlugin implements Plugin {
               council.status = 'active'; // Immediately activate the council
               const analysis = await this.startAnalysis(council);
               
+              // Format the response to be Twitter-friendly (under 280 chars)
+              const shortAnalysis = `$${crypto.toUpperCase()} RATING:\n` +
+                `Tech: ${council.technicalScore}/100 | Fund: ${council.fundamentalScore}/100 | Meme: ${council.memePotential}/100\n` +
+                `Risk: ${council.riskLevel}\n${this.generateSentiment(finalScore)}`;
+      
               callback({
-                text: analysis,
+                text: shortAnalysis,
                 type: "text"
               });
               return;
