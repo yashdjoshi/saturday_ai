@@ -178,6 +178,33 @@ export class CouncilPlugin implements Plugin {
         console.log("Handler called with message:", message.content.text);
         const text = message.content.text.toLowerCase();
         
+        // Check if message is about rating a crypto
+        if (text.includes("rate") || text.includes("what do you think about")) {
+          console.log("Detected rate request");
+          const supportedCryptos = ["btc", "eth", "sol", "doge", "shib"];
+          const rateRegex = /(?:rate|about)\s+(\w+)(?:[^a-zA-Z]|$)/i;
+          const cryptoMatch = text.match(rateRegex);
+
+          if (cryptoMatch && cryptoMatch[1]) {
+            const matchedCrypto = cryptoMatch[1].toLowerCase();
+            if (supportedCryptos.includes(matchedCrypto)) {
+              console.log("Matched crypto:", matchedCrypto);
+              const crypto = matchedCrypto.toUpperCase();
+              
+              // Create pending council
+              const tokenData = await this.getTokenTradeData(crypto);
+              const council = this.suggestCouncil(crypto, tokenData);
+              console.log("Created council:", council);
+              
+              callback({
+                text: `To rate $${crypto}, please provide:\n- Contract address\n- Website\n- Twitter handle\n\nFormat: address: 0x... website: https://... twitter: @...`,
+                type: "text"
+              });
+              return;
+            }
+          }
+        }
+
         // Extract project info if provided
         const addressMatch = text.match(/address:\s*([^\s]+)/i);
         const websiteMatch = text.match(/website:\s*([^\s]+)/i);
@@ -205,7 +232,8 @@ export class CouncilPlugin implements Plugin {
           }
         }
 
-        // Check for rating request
+        // Check for progression commands
+        if (text.includes("confirm") || text.includes("next")) {
           console.log("Detected progression command");
           const activeCouncils = Array.from(this.councils.values())
             .filter((c: Council) => c.status === "pending" || c.status === "active");
@@ -242,39 +270,12 @@ export class CouncilPlugin implements Plugin {
           return;
         }
 
-        // Check if message is about rating a crypto
-        if (text.includes("rate") || text.includes("what do you think about")) {
-          console.log("Detected rate request");
-          const supportedCryptos = ["btc", "eth", "sol", "doge", "shib"];
-          const rateRegex = /(?:rate|about)\s+(\w+)(?:[^a-zA-Z]|$)/i;
-          const cryptoMatch = text.match(rateRegex);
-
-          if (cryptoMatch && cryptoMatch[1]) {
-            const matchedCrypto = cryptoMatch[1].toLowerCase();
-            if (supportedCryptos.includes(matchedCrypto)) {
-              console.log("Matched crypto:", matchedCrypto);
-              const crypto = matchedCrypto.toUpperCase();
-              
-              // Create pending council
-              const council = this.suggestCouncil(crypto);
-              console.log("Created council:", council);
-              
-              callback({
-                text: `To rate $${crypto}, please provide:\n- Contract address\n- Website\n- Twitter handle\n\nFormat: address: 0x... website: https://... twitter: @...`,
-                type: "text"
-              });
-              return;
-            }
-          }
-        }
-
         // Default response if no conditions are met
         callback({
           text: "I'm not sure what you're asking. Try 'rate BTC' or 'confirm'.",
           type: "text"
         });
-        return;
-      },
+      }
     });
   }
 
