@@ -52,7 +52,7 @@ export class CouncilManager implements Plugin {
   ];
 
   async initialize(runtime: IAgentRuntime): Promise<void> {
-    runtime.messageManager.registerHandler('beforeMessage', async (message) => {
+    runtime.on('beforeMessage', async (message) => {
       // Handle incoming messages
       console.log('Council received message:', message);
     });
@@ -63,11 +63,11 @@ export class CouncilManager implements Plugin {
       description: "Handles messages related to crypto ratings and council confirmations.",
       examples: [
         [
-          { input: "Rate BTC", output: "Yo fam! Assembling council #1 to rate $BTC!" },
-          { input: "What do you think about ETH?", output: "Yo fam! Assembling council #2 to rate $ETH!" },
+          { text: "Rate BTC", response: "Yo fam! Assembling council #1 to rate $BTC!" },
+          { text: "What do you think about ETH?", response: "Yo fam! Assembling council #2 to rate $ETH!" },
         ],
         [
-          { input: "Confirm", output: "Council confirmed! Here's the rating: ..." },
+          { text: "Confirm", response: "Council confirmed! Here's the rating: ..." },
         ],
       ],
       validate: async (runtime, message) => {
@@ -76,7 +76,7 @@ export class CouncilManager implements Plugin {
         return text.includes("rate") || text.includes("what do you think about") || text.includes("confirm");
       },
       async handler(context) {
-        const text = context.input.text.toLowerCase();
+        const text = context.message.content.text.toLowerCase();
 
         // Check if message is about rating a crypto
         if (text.includes("rate") || text.includes("what do you think about")) {
@@ -89,9 +89,9 @@ export class CouncilManager implements Plugin {
             const council = this.suggestCouncil(crypto);
 
             if (council) {
-              context.output.text = `Yo fam! Assembling council #${council.id} to rate $${crypto}! Got @${council.members.map(m => m.name).join(" @")} on deck! Reply 'confirm' to get their takes! 🚀`;
+              context.response = `Yo fam! Assembling council #${council.id} to rate $${crypto}! Got @${council.members.map(m => m.name).join(" @")} on deck! Reply 'confirm' to get their takes! 🚀`;
             } else {
-              context.output.text = `Sorry, couldn't assemble a council for $${crypto}. Try again later!`;
+              context.response = `Sorry, couldn't assemble a council for $${crypto}. Try again later!`;
             }
             return;
           }
@@ -106,9 +106,9 @@ export class CouncilManager implements Plugin {
             this.confirmCouncil(council.id);
 
             const rating = await this.collectRatings(council.id);
-            context.output.text = rating;
+            context.response = rating;
           } else {
-            context.output.text = "No active councils to confirm. Try starting a new one!";
+            context.response = "No active councils to confirm. Try starting a new one!";
           }
           return;
         }
