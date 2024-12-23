@@ -125,7 +125,7 @@ export class CouncilManager implements Plugin {
         return text.includes("rate") || text.includes("what do you think about") || text.includes("confirm");
       },
       handler: async (runtime: IAgentRuntime, message: Memory, state: State, options: any, callback: any) => {
-        const text = context.message.content.text.toLowerCase();
+        const text = message.content.text.toLowerCase();
 
         // Check if message is about rating a crypto
         if (text.includes("rate") || text.includes("what do you think about")) {
