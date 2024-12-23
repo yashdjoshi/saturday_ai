@@ -214,7 +214,12 @@ export function createAgent(
     "Creating runtime for character",
     character.name
   );
-  return new AgentRuntime({
+
+  // Create council plugin instance
+  const councilPlugin = new CouncilPlugin();
+
+  // Create runtime with plugins
+  const runtime = new AgentRuntime({
     databaseAdapter: db,
     token,
     modelProvider: character.modelProvider,
@@ -224,7 +229,7 @@ export function createAgent(
       bootstrapPlugin,
       nodePlugin,
       character.settings.secrets?.WALLET_PUBLIC_KEY ? solanaPlugin : null,
-      new CouncilPlugin(),
+      councilPlugin,
     ].filter(Boolean),
     providers: [],
     actions: [],
@@ -232,6 +237,11 @@ export function createAgent(
     managers: [],
     cacheManager: cache,
   });
+
+  // Initialize council plugin with runtime
+  councilPlugin.initialize(runtime);
+
+  return runtime;
 }
 
 function intializeFsCache(baseDir: string, character: Character) {
