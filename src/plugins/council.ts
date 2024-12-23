@@ -175,6 +175,9 @@ export class CouncilPlugin implements Plugin {
         console.log("Handler called with message:", message.content.text);
         const text = message.content.text.toLowerCase();
         
+        // Set flag to prevent character from generating additional response
+        state.preventDefaultResponse = true;
+        
         // Handle rating requests
         if (text.includes("rate") || text.includes("what do you think about")) {
           const supportedCryptos = ["btc", "eth", "sol", "doge", "shib"];
