@@ -170,12 +170,11 @@ export class CouncilPlugin implements Plugin {
         ]
       ],
       validate: async (runtime: IAgentRuntime, message: { content: { text: string } }) => {
-        // Validation logic to determine if the action should run
-        console.log("Validating message:", message.content.text);
         const text = message.content.text.toLowerCase();
-        const isValid = text.includes("rate") || text.includes("what do you think about") || text.includes("confirm");
-        console.log("Is valid:", isValid);
-        return isValid;
+        return text.includes("rate") || 
+               text.includes("what do you think about") || 
+               text.includes("address:") ||
+               text.includes("confirm");
       },
       handler: async (runtime: IAgentRuntime, message: Memory, state: State, options: any, callback: any) => {
         console.log("Handler called with message:", message.content.text);
