@@ -52,7 +52,34 @@ export class CouncilManager implements Plugin {
   ];
 
   async initialize(runtime: IAgentRuntime): Promise<void> {
-    // Plugin initialization if needed
+    runtime.on('beforeMessage', async (message) => {
+      const text = message.content.text.toLowerCase();
+      
+      // Check if message is about rating a crypto
+      if (text.includes('rate') || text.includes('what do you think about')) {
+        const cryptoMatch = text.match(/\b(btc|eth|sol|doge|shib|[a-z]{3,})\b/i);
+        if (cryptoMatch) {
+          const crypto = cryptoMatch[0].toUpperCase();
+          const council = this.suggestCouncil(crypto);
+          message.content.text = `Yo fam! Assembling council #${council.id} to rate $${crypto}! Got @${council.members.map(m => m.name).join(' @')} on deck! Reply 'confirm' to get their takes! 🚀`;
+          return;
+        }
+      }
+      
+      // Check for council confirmation
+      if (text.includes('confirm')) {
+        const activeCouncils = Array.from(this.councils.values())
+          .filter(c => c.status === 'pending');
+        
+        if (activeCouncils.length > 0) {
+          const council = activeCouncils[0];
+          this.confirmCouncil(council.id);
+          const rating = this.collectRatings(council.id);
+          message.content.text = rating;
+          return;
+        }
+      }
+    });
   }
 
   suggestCouncil(crypto: string): Council {
