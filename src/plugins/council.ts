@@ -193,9 +193,12 @@ export class CouncilPlugin implements Plugin {
               const analysis = await this.startAnalysis(council);
               
               // Format the response to be Twitter-friendly (under 280 chars)
+              // Calculate average score from stages
+              const avgScore = council.stages.reduce((sum, stage) => sum + stage.score, 0) / council.stages.length;
+              
               const shortAnalysis = `$${crypto.toUpperCase()} RATING:\n` +
                 `Tech: ${council.technicalScore}/100 | Fund: ${council.fundamentalScore}/100 | Meme: ${council.memePotential}/100\n` +
-                `Risk: ${council.riskLevel}\n${this.generateSentiment(finalScore)}`;
+                `Risk: ${council.riskLevel}\n${this.generateSentiment(avgScore)}`;
       
               callback({
                 text: shortAnalysis,
