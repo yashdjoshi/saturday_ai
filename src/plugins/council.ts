@@ -6,23 +6,45 @@ interface CouncilMember {
   catchphrase: string;
 }
 
+type RiskLevel = 'low' | 'medium' | 'high';
+type CouncilStatus = 'pending' | 'active' | 'complete';
+
 interface Council {
   id: string;
   members: CouncilMember[];
-  status: 'pending' | 'active' | 'complete';
-  ratings: { [member: string]: number };
+  status: CouncilStatus;
+  ratings: Record<string, number>;
   crypto: string;
   analysis: string;
   technicalScore: number;
   fundamentalScore: number;
   memePotential: number;
-  riskLevel: 'low' | 'medium' | 'high';
+  riskLevel: RiskLevel;
+}
+
+interface CouncilRating {
+  memberName: string;
+  score: number;
+  comment?: string;
+}
+
+interface CouncilAnalysis {
+  technicalScore: number;
+  fundamentalScore: number;
+  memePotential: number;
+  riskLevel: RiskLevel;
+  summary: string;
 }
 
 export class CouncilManager implements Plugin {
   name = "council";
   description = "Manages crypto rating councils";
-  private councils: Map<string, Council> = new Map();
+  private councils: Map<string, Council>;
+  private readonly councilSize = 3;
+  
+  constructor() {
+    this.councils = new Map<string, Council>();
+  }
   private readonly councilMembers: CouncilMember[] = [
     {
       name: 'CryptoSage',
@@ -51,7 +73,24 @@ export class CouncilManager implements Plugin {
     }
   ];
 
-  async initialize(runtime: IAgentRuntime): Promise<void> {
+  async initialize(runtime: IAgentRuntime & {
+    on: (event: string, handler: (message: any) => Promise<void>) => void;
+    registerAction: (action: {
+      name: string;
+      similes: string[];
+      description: string;
+      examples: Array<Array<{ text: string; response: string }>>;
+      validate: (runtime: IAgentRuntime, message: { content: { text: string } }) => Promise<boolean>;
+      handler: (context: { 
+        message: { 
+          content: { 
+            text: string 
+          } 
+        },
+        response: string
+      }) => Promise<void>;
+    }) => void;
+  }): Promise<void> {
     runtime.registerAction({
       name: "handleCryptoMessages",
       similes: ["crypto rating", "rate crypto", "crypto council"], // Alternative triggers
