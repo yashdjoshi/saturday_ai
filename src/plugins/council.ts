@@ -135,12 +135,16 @@ export class CouncilPlugin implements Plugin {
         if (text.includes("rate") || text.includes("what do you think about")) {
           console.log("Detected rate request");
           const supportedCryptos = ["btc", "eth", "sol", "doge", "shib"];
-          const cryptoRegex = new RegExp(`\\b(${supportedCryptos.join("|")}|[a-z]{3,})\\b`, "i");
-          const cryptoMatch = text.match(cryptoRegex);
+          // Extract crypto symbol after "rate" or between "about" and end/punctuation
+          const rateRegex = /(?:rate|about)\s+(\w+)(?:[^a-zA-Z]|$)/i;
+          const cryptoMatch = text.match(rateRegex);
 
-          if (cryptoMatch) {
-            console.log("Matched crypto:", cryptoMatch[0]);
-            const crypto = cryptoMatch[0].toUpperCase();
+          if (cryptoMatch && cryptoMatch[1]) {
+            const matchedCrypto = cryptoMatch[1].toLowerCase();
+            // Verify it's a supported crypto
+            if (supportedCryptos.includes(matchedCrypto)) {
+              console.log("Matched crypto:", matchedCrypto);
+              const crypto = matchedCrypto.toUpperCase();
             const council = this.suggestCouncil(crypto);
             console.log("Created council:", council);
 
