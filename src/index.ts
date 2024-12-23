@@ -267,18 +267,8 @@ async function startAgent(character: Character, directClient: DirectClient) {
 
     await runtime.initialize();
 
-    // Add event handling capabilities to runtime
-    const runtimeWithEvents = {
-      ...runtime,
-      on: (event: string, handler: (message: any) => Promise<void>) => {
-        // Basic event handling implementation
-        runtime.events?.on(event, handler);
-      },
-      registerAction: runtime.registerAction.bind(runtime)
-    };
-    
     // Initialize the council manager plugin
-    await councilManager.initialize(runtimeWithEvents);
+    await councilManager.initialize(runtime);
 
     const clients = await initializeClients(character, runtime);
 

@@ -89,19 +89,19 @@ export class CouncilManager implements Plugin {
       description: "Handles messages related to crypto ratings and council confirmations.",
       examples: [
         [
-          { text: "Rate BTC", response: "Yo fam! Assembling council #1 to rate $BTC!" },
-          { text: "What do you think about ETH?", response: "Yo fam! Assembling council #2 to rate $ETH!" }
+          { input: "Rate BTC", output: "Yo fam! Assembling council #1 to rate $BTC!" },
+          { input: "What do you think about ETH?", output: "Yo fam! Assembling council #2 to rate $ETH!" }
         ],
         [
-          { text: "Confirm", response: "Council confirmed! Here's the rating: ..." }
+          { input: "Confirm", output: "Council confirmed! Here's the rating: ..." }
         ]
       ],
-      validate: async (runtime, message) => {
+      validate: async (runtime: IAgentRuntime, message: { content: { text: string } }) => {
         // Validation logic to determine if the action should run
         const text = message.content.text.toLowerCase();
         return text.includes("rate") || text.includes("what do you think about") || text.includes("confirm");
       },
-      async handler(context: ActionContext) {
+      async handler(runtime: IAgentRuntime) {
         const text = context.message.content.text.toLowerCase(); // Corrected to use `context.message.content.text`
 
         // Check if message is about rating a crypto
