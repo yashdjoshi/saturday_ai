@@ -364,7 +364,12 @@ export class CouncilPlugin implements Plugin {
 
     // Generate detailed ratings
     council.members.forEach(member => {
-      council.ratings[member.name] = Math.floor(Math.random() * 10) + 1;
+      const rating: CouncilRating = {
+        memberName: member.name,
+        score: Math.floor(Math.random() * 10) + 1,
+        comment: this.generateMemberComment(member)
+      };
+      council.ratings[member.name] = rating;
     });
 
     // Calculate scores
@@ -374,7 +379,7 @@ export class CouncilPlugin implements Plugin {
       council.memePotential = Math.floor(Math.random() * 100);
     }
     
-    const avgRating = Object.values(council.ratings).reduce((a, b) => a + b, 0) / council.members.length;
+    const avgRating = Object.values(council.ratings).reduce((a, b) => a + b.score, 0) / council.members.length;
     
     // Determine risk level
     council.riskLevel = avgRating > 7 ? 'low' : avgRating > 4 ? 'medium' : 'high';
