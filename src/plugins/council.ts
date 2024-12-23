@@ -151,7 +151,7 @@ export class CouncilPlugin implements Plugin {
               if (council) {
                 const memberList = council.members.map(m => m.name).join(", @");
                 return {
-                  text: `Yo fam! Assembling council #${council.id} to rate $${crypto}! Got @${memberList} on deck! Reply 'confirm' to get their takes! 🚀`
+                  text: `1/1 Yo fam! Assembling council #${council.id} to rate $${crypto}! Got @${memberList} on deck! Reply 'confirm' to get their takes! 🚀`
                 };
               } else {
                 return {
@@ -162,21 +162,25 @@ export class CouncilPlugin implements Plugin {
           }
 
           // Check for council confirmation
+          // Check for confirmation command
           if (text.includes("confirm")) {
+            console.log("Detected confirm command");
             const activeCouncils = Array.from(this.councils.values()).filter((c: Council) => c.status === "pending");
+            console.log("Active councils:", activeCouncils);
 
             if (activeCouncils.length > 0) {
               const council = activeCouncils[0] as Council;
+              console.log("Found pending council:", council);
               this.confirmCouncil(council.id);
 
-              const rating = await this.collectRatings(council.id);
+              const rating = this.collectRatings(council.id);
+              console.log("Generated rating:", rating);
               return {text: rating};
             } else {
               return {
                 text: "No active councils to confirm. Try starting a new one!"
               };
             }
-            return;
           }
 
           // Default response if no conditions are met
