@@ -1,6 +1,5 @@
 import { PostgresDatabaseAdapter } from "@ai16z/adapter-postgres";
 import { SqliteDatabaseAdapter } from "@ai16z/adapter-sqlite";
-import { councilPlugin } from "./plugins/council/index.js";
 import { DirectClientInterface } from "@ai16z/client-direct";
 import { DiscordClientInterface } from "@ai16z/client-discord";
 import { AutoClientInterface } from "@ai16z/client-auto";
@@ -34,6 +33,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { character } from "./character.ts";
 import type { DirectClient } from "@ai16z/client-direct";
+import {councilPlugin, CouncilPlugin} from "./plugins/council";
 
 const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
 const __dirname = path.dirname(__filename); // get the name of the directory
@@ -268,7 +268,7 @@ async function startAgent(character: Character, directClient: DirectClient) {
     await runtime.initialize();
     
     // Initialize the council plugin
-    const councilPlugin = runtime.plugins.find(p => p.name === "council");
+    const councilPlugin = runtime.plugins.find(p => p.name === "councilPlugin");
     if (councilPlugin) {
       await councilPlugin.initialize(runtime);
     }
