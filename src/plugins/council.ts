@@ -166,10 +166,21 @@ export class CouncilPlugin implements Plugin {
       ],
       validate: async (runtime: IAgentRuntime, message: { content: { text: string } }) => {
         const text = message.content.text.toLowerCase();
-        return text.includes("rate") || 
+        // Extract crypto symbol from rate command
+        const rateRegex = /(?:rate|about)\s+(\w+)(?:[^a-zA-Z]|$)/i;
+        const cryptoMatch = text.match(rateRegex);
+        
+        // List of supported cryptos
+        const supportedCryptos = ["btc", "eth", "sol", "doge", "shib"];
+        
+        // Check if this is a valid rating request for a supported crypto
+        const isRatingRequest = cryptoMatch && 
+          supportedCryptos.includes(cryptoMatch[1].toLowerCase());
+
+        return isRatingRequest || 
                text.includes("what do you think about") || 
                text.includes("address:") ||
-               text.includes("confirm");
+               text === "confirm";
       },
       handler: async (runtime: IAgentRuntime, message: Memory, state: State, options: any, callback: any) => {
         console.log("Handler called with message:", message.content.text);
@@ -188,6 +199,7 @@ export class CouncilPlugin implements Plugin {
             const matchedCrypto = cryptoMatch[1].toLowerCase();
             if (supportedCryptos.includes(matchedCrypto)) {
               const crypto = matchedCrypto.toUpperCase();
+              console.log(`Starting council analysis for ${crypto}`);
               
               // Get token data and create new council
               const tokenData = await this.getTokenTradeData(crypto);
