@@ -188,7 +188,6 @@ export class CouncilPlugin implements Plugin {
         state.preventDefaultResponse = true;
         
         // Handle rating requests
-        {
           // Match either $SYMBOL or "rate SYMBOL" 
           const rateRegex = /(?:\$(\w+)|rate\s+(\w+))(?:[^a-zA-Z]|$)/i;
           const cryptoMatch = text.match(rateRegex);
@@ -215,9 +214,8 @@ export class CouncilPlugin implements Plugin {
                 text: councilMsg,
                 type: "text"
               });
-              return;
+              return councilMsg;
             }
-          }
 
         // Handle confirmation
         if (text.toLowerCase() === "confirm") {
@@ -250,7 +248,7 @@ export class CouncilPlugin implements Plugin {
             });
 
             this.activeCouncil = null; // Reset active council
-            return;
+            return response;
           }
         }
 
