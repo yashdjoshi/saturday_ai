@@ -218,7 +218,6 @@ export class CouncilPlugin implements Plugin {
               return;
             }
           }
-        }
 
         // Handle confirmation
         if (text.toLowerCase() === "confirm") {
