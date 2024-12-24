@@ -208,18 +208,13 @@ export class CouncilPlugin implements Plugin {
               const council = this.suggestCouncil(crypto, tokenData);
               this.activeCouncil = council;
 
-              // Generate and show initial analysis
+              // Generate analysis and show combined message
               const analysis = await this.startAnalysis(council);
-              callback({
-                text: `🔍 Initial Analysis for $${crypto}:\n\n${analysis}`,
-                type: "text"
-              });
-
-              // Show council suggestion in separate message
-              const councilMsg = `👥 Suggested Council:\n` +
+              const councilMsg = `👥 Council Analysis for $${crypto}:\n\n${analysis}\n\n` +
+                `Suggested Council Members:\n` +
                 council.members.map(m => `- ${m.name} (${m.expertise})\n  "${m.catchphrase}"`).join('\n') +
-                `\n\nReply 'confirm' to proceed or 'change' for new council`;
-      
+                `\n\nReply 'confirm' to proceed with rating`;
+              
               callback({
                 text: councilMsg,
                 type: "text"
