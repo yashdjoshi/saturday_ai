@@ -215,9 +215,6 @@ export function createAgent(
     character.name
   );
 
-  // Create council plugin instance
-  const councilPlugin = new CouncilPlugin();
-
   // Create runtime with plugins
   const runtime = new AgentRuntime({
     databaseAdapter: db,
@@ -229,7 +226,7 @@ export function createAgent(
       bootstrapPlugin,
       nodePlugin,
       character.settings.secrets?.WALLET_PUBLIC_KEY ? solanaPlugin : null,
-      councilPlugin,
+      new CouncilPlugin(),
     ].filter(Boolean),
     providers: [],
     actions: [],
@@ -237,9 +234,6 @@ export function createAgent(
     managers: [],
     cacheManager: cache,
   });
-
-  // Initialize council plugin with runtime
-  councilPlugin.initialize(runtime);
 
   return runtime;
 }
