@@ -218,6 +218,9 @@ const councilAction: Action = {
            text === "confirm";
   },
   handler: async (runtime: IAgentRuntime, message: Memory, state: State, options: any, callback: any) => {
+    // Prevent character from generating additional response
+    state.preventDefaultResponse = true;
+    
     const text = message.content.text.toLowerCase();
 
     // Check if message is about rating a crypto
