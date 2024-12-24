@@ -215,6 +215,8 @@ export function createAgent(
     character.name
   );
 
+  const councilPlugin = new CouncilPlugin();
+
   // Create runtime with plugins
   const runtime = new AgentRuntime({
     databaseAdapter: db,
@@ -234,6 +236,8 @@ export function createAgent(
     managers: [],
     cacheManager: cache,
   });
+
+  councilPlugin.initialize(runtime);
 
   return runtime;
 }
