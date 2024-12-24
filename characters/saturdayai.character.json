@@ -3,7 +3,7 @@
   "plugins": [
     {
       "name": "council",
-      "description": "A plugin that allows StonkBro to coordinate crypto rating councils.",
+      "description": "A plugin that allows SaturdayAI to coordinate crypto rating councils.",
       "enabled": true,
       "config": {}
     }
