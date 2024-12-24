@@ -223,11 +223,11 @@ const councilAction: Action = {
     
     const text = message.content.text.toLowerCase();
 
-    // Check if message is about rating a crypto
-    if (text.includes("rate") || text.includes("what do you think about")) {
+    // Check if message contains a $TICKER
+    if (text.includes("$")) {
       const supportedCryptos = ["btc", "eth", "sol", "doge", "shib"];
-      const cryptoRegex = new RegExp(`\\b(${supportedCryptos.join("|")}|[a-z]{3,})\\b`, "i");
-      const cryptoMatch = text.match(cryptoRegex);
+      const tickerRegex = /\$(\w+)/i;
+      const cryptoMatch = text.match(tickerRegex);
 
       if (cryptoMatch) {
         const crypto = cryptoMatch[0].toUpperCase();

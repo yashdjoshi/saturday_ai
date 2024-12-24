@@ -168,21 +168,19 @@ export class CouncilPlugin implements Plugin {
       validate: async (runtime: IAgentRuntime, message: { content: { text: string } }) => {
         console.log("Validating message in Council Plugin:", message.content.text);
         const text = message.content.text.toLowerCase();
-        // Extract crypto symbol from rate command
-        const rateRegex = /(?:rate|about)\s+(\w+)(?:[^a-zA-Z]|$)/i;
-        const cryptoMatch = text.match(rateRegex);
-        
+    
+        // Extract crypto symbol after $ sign
+        const tickerRegex = /\$(\w+)/i;
+        const cryptoMatch = text.match(tickerRegex);
+    
         // List of supported cryptos
         const supportedCryptos = ["btc", "eth", "sol", "doge", "shib"];
-        
-        // Check if this is a valid rating request for a supported crypto
-        const isRatingRequest = cryptoMatch && 
+    
+        // Check if this is a valid ticker request for a supported crypto
+        const isTickerRequest = cryptoMatch && 
           supportedCryptos.includes(cryptoMatch[1].toLowerCase());
 
-        return isRatingRequest || 
-               text.includes("what do you think about") || 
-               text.includes("address:") ||
-               text === "confirm";
+        return isTickerRequest || text === "confirm";
       },
       handler: async (runtime: IAgentRuntime, message: Memory, state: State, options: any, callback: any) => {
         console.log("Handler called with message:", message.content.text);
