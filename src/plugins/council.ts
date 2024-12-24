@@ -574,15 +574,12 @@ export class CouncilPlugin implements Plugin {
         .map(stage => `${stage.name}: ${stage.score}/100\n${stage.analysis}`)
         .join('\n\n');
       
-      const memberAnalysis = Object.values(council.memberAnalyses || {}).join('\n');
-      
       const finalScore = Object.values(council.ratings)
         .reduce((sum, rating) => sum + rating.score, 0) / 
         (Object.keys(council.ratings).length || 1);
 
       return `🔍 Analysis for $${council.crypto}\n\n` +
              `${stageAnalysis}\n\n` +
-             `👥 Council Ratings:\n${memberAnalysis}\n\n` +
              `📊 Final Score: ${finalScore.toFixed(1)}/100\n` +
              `${this.generateSentiment(finalScore)}`;
     } catch (error) {
