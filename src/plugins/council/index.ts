@@ -204,12 +204,8 @@ const councilAction: Action = {
     const rateRegex = /(?:rate|rank)\s+(\w+)(?:[^a-zA-Z]|$)/i;
     const cryptoMatch = text.match(rateRegex);
     
-    // List of supported cryptos
-    const supportedCryptos = ["btc", "eth", "sol", "doge", "shib"];
-    
-    // Check if this is a valid rating request for a supported crypto
-    const isRatingRequest = cryptoMatch && 
-      supportedCryptos.includes(cryptoMatch[1].toLowerCase());
+    // Check if this is a valid rating request
+    const isRatingRequest = cryptoMatch !== null;
 
     console.log("Is rating request:", isRatingRequest);
     
@@ -225,7 +221,6 @@ const councilAction: Action = {
 
     // Check if message contains a $TICKER
     if (text.includes("$")) {
-      const supportedCryptos = ["btc", "eth", "sol", "doge", "shib"];
       const tickerRegex = /\$(\w+)/i;
       const cryptoMatch = text.match(tickerRegex);
 

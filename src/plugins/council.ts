@@ -173,12 +173,8 @@ export class CouncilPlugin implements Plugin {
         const tickerRegex = /\$(\w+)/i;
         const cryptoMatch = text.match(tickerRegex);
     
-        // List of supported cryptos
-        const supportedCryptos = ["btc", "eth", "sol", "doge", "shib"];
-    
-        // Check if this is a valid ticker request for a supported crypto
-        const isTickerRequest = cryptoMatch && 
-          supportedCryptos.includes(cryptoMatch[1].toLowerCase());
+        // Check if this is a valid ticker request
+        const isTickerRequest = cryptoMatch !== null;
 
         return isTickerRequest || text === "confirm";
       },
