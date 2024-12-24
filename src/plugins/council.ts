@@ -188,8 +188,8 @@ export class CouncilPlugin implements Plugin {
         state.preventDefaultResponse = true;
         
         // Handle rating requests
-        if (text.includes("rate") || text.includes("what do you think about")) {
-          // Match either $SYMBOL or "rate SYMBOL"
+        {
+          // Match either $SYMBOL or "rate SYMBOL" 
           const rateRegex = /(?:\$(\w+)|rate\s+(\w+))(?:[^a-zA-Z]|$)/i;
           const cryptoMatch = text.match(rateRegex);
 
