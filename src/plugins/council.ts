@@ -128,6 +128,7 @@ export class CouncilPlugin implements Plugin {
   private activeCouncil: Council | null = null;
 
   async initialize(runtime: IAgentRuntime): Promise<void> {
+    console.log("Initializing Council Plugin");
     runtime.registerAction({
       name: "handleCryptoMessages",
       similes: ["crypto rating", "rate crypto", "crypto council"],
@@ -165,6 +166,7 @@ export class CouncilPlugin implements Plugin {
         ]
       ],
       validate: async (runtime: IAgentRuntime, message: { content: { text: string } }) => {
+        console.log("Validating message in Council Plugin:", message.content.text);
         const text = message.content.text.toLowerCase();
         // Extract crypto symbol from rate command
         const rateRegex = /(?:rate|about)\s+(\w+)(?:[^a-zA-Z]|$)/i;
