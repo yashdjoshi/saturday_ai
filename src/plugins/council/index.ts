@@ -199,10 +199,23 @@ const councilAction: Action = {
     ]
   ],
   validate: async (runtime: IAgentRuntime, message: Memory) => {
+    console.log("Validating council message:", message.content.text);
     const text = message.content.text.toLowerCase();
-    return text.includes("rate") || 
+    const rateRegex = /(?:rate|rank)\s+(\w+)(?:[^a-zA-Z]|$)/i;
+    const cryptoMatch = text.match(rateRegex);
+    
+    // List of supported cryptos
+    const supportedCryptos = ["btc", "eth", "sol", "doge", "shib"];
+    
+    // Check if this is a valid rating request for a supported crypto
+    const isRatingRequest = cryptoMatch && 
+      supportedCryptos.includes(cryptoMatch[1].toLowerCase());
+
+    console.log("Is rating request:", isRatingRequest);
+    
+    return isRatingRequest || 
            text.includes("what do you think about") || 
-           text.includes("confirm");
+           text === "confirm";
   },
   handler: async (runtime: IAgentRuntime, message: Memory, state: State, options: any, callback: any) => {
     const text = message.content.text.toLowerCase();

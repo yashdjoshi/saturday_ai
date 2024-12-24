@@ -226,7 +226,7 @@ export function createAgent(
       bootstrapPlugin,
       nodePlugin,
       character.settings.secrets?.WALLET_PUBLIC_KEY ? solanaPlugin : null,
-      new CouncilPlugin(),
+      councilPlugin,
     ].filter(Boolean),
     providers: [],
     actions: [],
