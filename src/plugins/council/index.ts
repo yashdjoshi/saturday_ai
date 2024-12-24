@@ -201,17 +201,13 @@ const councilAction: Action = {
   validate: async (runtime: IAgentRuntime, message: Memory) => {
     console.log("Validating council message:", message.content.text);
     const text = message.content.text.toLowerCase();
-    const rateRegex = /(?:rate|rank)\s+(\w+)(?:[^a-zA-Z]|$)/i;
-    const cryptoMatch = text.match(rateRegex);
     
-    // Check if this is a valid rating request
-    const isRatingRequest = cryptoMatch !== null;
-
-    console.log("Is rating request:", isRatingRequest);
+    // Extract crypto symbol after $ sign
+    const tickerRegex = /\$(\w+)/i;
+    const cryptoMatch = text.match(tickerRegex);
     
-    return isRatingRequest || 
-           text.includes("what do you think about") || 
-           text === "confirm";
+    // Only handle $ prefixed tickers or confirm commands
+    return cryptoMatch !== null || text === "confirm";
   },
   handler: async (runtime: IAgentRuntime, message: Memory, state: State, options: any, callback: any) => {
     // Prevent character from generating additional response

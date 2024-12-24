@@ -173,10 +173,8 @@ export class CouncilPlugin implements Plugin {
         const tickerRegex = /\$(\w+)/i;
         const cryptoMatch = text.match(tickerRegex);
     
-        // Check if this is a valid ticker request
-        const isTickerRequest = cryptoMatch !== null;
-
-        return isTickerRequest || text === "confirm";
+        // Only handle $ prefixed tickers or confirm commands
+        return cryptoMatch !== null || text === "confirm";
       },
       handler: async (runtime: IAgentRuntime, message: Memory, state: State, options: any, callback: any) => {
         console.log("Handler called with message:", message.content.text);
