@@ -235,18 +235,11 @@ export class CouncilPlugin implements Plugin {
             const ratings = Object.values(council.ratings);
             const avgRating = ratings.reduce((sum, r) => sum + r.score, 0) / ratings.length;
 
-            // Format detailed response
-            const response = `🏛️ Council Ratings for $${council.crypto}:\n\n` +
-              `Individual Ratings:\n` +
-              ratings.map(r => `${r.memberName} (${council.members.find(m => m.name === r.memberName)?.expertise}):\n` +
-                          `Score: ${r.score}/10\n` +
-                          `"${r.comment}"\n`).join('\n') +
-              `\n📊 Overall Rating: ${avgRating.toFixed(1)}/10\n\n` +
-              `Technical Score: ${council.technicalScore}/100\n` +
-              `Fundamental Score: ${council.fundamentalScore}/100\n` +
-              `Meme Potential: ${council.memePotential}/100\n\n` +
-              `Risk Level: ${council.riskLevel.toUpperCase()}\n\n` +
-              this.generateSentiment(avgRating * 10); // Convert to 100 scale for sentiment
+            // Format concise response for Twitter
+            const response = `🏛️ $${council.crypto} Council Rating: ${avgRating.toFixed(1)}/10\n` +
+              `📊 Tech: ${council.technicalScore}/100 | Fund: ${council.fundamentalScore}/100\n` +
+              `Risk: ${council.riskLevel.toUpperCase()}\n` +
+              `${this.generateSentiment(avgRating * 10)} #Crypto #${council.crypto}`; // Convert to 100 scale for sentiment
 
             callback({
               text: response,
