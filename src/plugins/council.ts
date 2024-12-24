@@ -169,11 +169,11 @@ export class CouncilPlugin implements Plugin {
         console.log("Validating message in Council Plugin:", message.content.text);
         const text = message.content.text.toLowerCase();
     
-        // Extract crypto symbol after $ sign
-        const tickerRegex = /\$(\w+)/i;
+        // Extract crypto symbol after $ sign or after "rate"
+        const tickerRegex = /\$(\w+)|rate\s+(\w+)/i;
         const cryptoMatch = text.match(tickerRegex);
     
-        // Only handle $ prefixed tickers or confirm commands
+        // Handle $ prefixed tickers, rate commands, or confirm commands
         return cryptoMatch !== null || text === "confirm";
       },
       handler: async (runtime: IAgentRuntime, message: Memory, state: State, options: any, callback: any) => {
