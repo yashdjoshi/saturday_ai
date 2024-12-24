@@ -168,13 +168,17 @@ export class CouncilPlugin implements Plugin {
       validate: async (runtime: IAgentRuntime, message: { content: { text: string } }) => {
         console.log("Validating message in Council Plugin:", message.content.text);
         const text = message.content.text.toLowerCase();
+        
+        // Remove @ mentions from the text
+        const cleanText = text.replace(/@\w+\s+/, '');
+        console.log("Cleaned text for validation:", cleanText);
     
         // Extract crypto symbol after $ sign or after "rate"
         const tickerRegex = /\$(\w+)|rate\s+(\w+)/i;
-        const cryptoMatch = text.match(tickerRegex);
+        const cryptoMatch = cleanText.match(tickerRegex);
     
         // Handle $ prefixed tickers, rate commands, or confirm commands
-        return cryptoMatch !== null || text === "confirm";
+        return cryptoMatch !== null || cleanText === "confirm";
       },
       handler: async (runtime: IAgentRuntime, message: Memory, state: State, options: any, callback: any) => {
         console.log("Handler called with message:", message.content.text);
