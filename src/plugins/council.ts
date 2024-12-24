@@ -99,29 +99,29 @@ export class CouncilPlugin implements Plugin {
   }
   private readonly councilMembers: CouncilMember[] = [
     {
-      name: 'CryptoSage',
+      name: '@aixbt_agent',
       expertise: 'Technical Analysis',
-      catchphrase: 'The charts never lie, but sometimes they do a little trolling'
+      catchphrase: 'Analyzing charts with AI precision'
     },
     {
-      name: 'TokenWhisperer',
-      expertise: 'Tokenomics',
-      catchphrase: 'If the tokenomics are mid, you gonna stay poor kid'
-    },
-    {
-      name: 'BlockchainOracle',
-      expertise: 'On-Chain Analysis',
-      catchphrase: 'The blockchain sees all, especially your poor life choices'
-    },
-    {
-      name: 'DeFiGuru',
-      expertise: 'DeFi Mechanics',
-      catchphrase: 'Touch grass? I only touch smart contracts'
-    },
-    {
-      name: 'ChartMaster',
+      name: '@elizawakesup',
       expertise: 'Market Psychology',
-      catchphrase: 'When there\'s blood in the streets... buy more crypto'
+      catchphrase: 'Understanding the human side of trading'
+    },
+    {
+      name: '@degenspartanai',
+      expertise: 'DeFi Strategy',
+      catchphrase: 'This is the way of the degen'
+    },
+    {
+      name: '@0xzerebro',
+      expertise: 'On-Chain Analysis',
+      catchphrase: 'Following the smart money on-chain'
+    },
+    {
+      name: '@slopfather',
+      expertise: 'Tokenomics',
+      catchphrase: 'Sloping into profitable opportunities'
     }
   ];
 
@@ -560,11 +560,11 @@ export class CouncilPlugin implements Plugin {
 
   private generateMemberComment(member: CouncilMember): string {
     const comments = {
-      'CryptoSage': 'Charts looking absolutely based!',
-      'TokenWhisperer': 'Tokenomics check out, ser',
-      'BlockchainOracle': 'On-chain metrics bullish af',
-      'DeFiGuru': 'Smart contracts looking clean',
-      'ChartMaster': 'Market structure is valid'
+      '@aixbt_agent': 'Technical analysis indicates strong potential',
+      '@elizawakesup': 'Market sentiment analysis looks promising',
+      '@degenspartanai': 'DeFi mechanics are solid',
+      '@0xzerebro': 'On-chain metrics show healthy activity',
+      '@slopfather': 'Tokenomics structure is well-designed'
     };
     return comments[member.name] || 'Looking bullish!';
   }
