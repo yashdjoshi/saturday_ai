@@ -189,13 +189,13 @@ export class CouncilPlugin implements Plugin {
         
         // Handle rating requests
         if (text.includes("rate") || text.includes("what do you think about")) {
-          const supportedCryptos = ["btc", "eth", "sol", "doge", "shib"];
-          const rateRegex = /(?:rate|about)\s+(\w+)(?:[^a-zA-Z]|$)/i;
+          // Match either $SYMBOL or "rate SYMBOL"
+          const rateRegex = /(?:\$(\w+)|rate\s+(\w+))(?:[^a-zA-Z]|$)/i;
           const cryptoMatch = text.match(rateRegex);
 
-          if (cryptoMatch && cryptoMatch[1]) {
-            const matchedCrypto = cryptoMatch[1].toLowerCase();
-            if (supportedCryptos.includes(matchedCrypto)) {
+          if (cryptoMatch) {
+            // Get the crypto symbol from either capture group
+            const matchedCrypto = (cryptoMatch[1] || cryptoMatch[2]).toLowerCase();
               const crypto = matchedCrypto.toUpperCase();
               console.log(`Starting council analysis for ${crypto}`);
               
